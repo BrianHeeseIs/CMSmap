@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import smtplib, base64, os, sys, getopt, urllib2, urllib, re, socket, time, itertools, urlparse, multiprocessing
+import smtplib, base64, os, sys, getopt, urllib2, urllib, re, socket, time, itertools, urlparse, threading, Queue, multiprocessing
 try:
     #from BeautifulSoup import BeautifulSoup
     from bs4 import BeautifulSoup
@@ -16,7 +16,35 @@ except:
 version=0.1
  
     
+class Initialize:
+    # Save Wordpress, Joomla and Drupal plugins in a local file
+    # Set default parameters 
+    
+class CMStype:
+    # Detect type of CMS
+    
+class WPScan:
+    # Scan WordPress site
 
+class JooScan:
+    # Scan Joomla site
+
+class DruScan:
+    # Scan Drupal site
+    
+class OutputReport:
+    
+    def TXT:
+    
+    def HTML:
+        
+    def XML:
+    
+class BruteForce:
+    
+class PostExploit:
+    
+class JobQue:
 
 def usage(version):
     print "CMScan tool v"+str(version)+" - Automatic CMS Scanner\nUsage: " + os.path.basename(sys.argv[0]) + """ -u <URL>
