@@ -29,13 +29,18 @@ def usage(version):
 if __name__ == "__main__":
     # command line arguments
     if sys.argv[1:]:
-        optlist, args = getopt.getopt(sys.argv[1:], 'u')
-        
+        try:
+            optlist, args = getopt.getopt(sys.argv[1:], 'u:vh', ["url=", "version", "help"])
+        except getopt.GetoptError as err:
+            # print help information and exit:
+            print(err) # print something like "option -a not recognized"
+            usage(version)
+            sys.exit(2)  
         for o, a in optlist:
             if o == "-h":
                 usage(version)
                 sys.exit()
-            elif o == "-u" or "--url":
+            elif o in ("-u", "--url"):
                 url = a
                 pUrl = urlparse.urlparse(url)
                 #clean up supplied URLs
@@ -50,4 +55,5 @@ if __name__ == "__main__":
             else:
                 usage(version)
                 sys.exit()
+                
 
