@@ -1,2 +1,2 @@
-CMScan
+cmsmap
 ======
