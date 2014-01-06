@@ -21,7 +21,8 @@ class Initialize:
     # Save Wordpress, Joomla and Drupal plugins in a local file
     # Set default parameters 
     def __init__(self):
-        pass
+        self.agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
+        self.headers={'User-Agent':self.agent,}
     
     def GetWordPressPlugins(self):
         print "[*] Downloading WordPress plugins"
@@ -80,6 +81,32 @@ class Initialize:
         print "[*] Writing file: %s" % ('drupal_plugins.txt')
         sys.exit() 
 
+    def ExploitDBSearch(self,query,file):
+        f = open(file, "a")
+        print "[*] Downloading "+query+" plugins"
+        
+        htmltext = urllib2.urlopen("http://www.exploit-db.com/search/?action=search&filter_page=1&filter_description="+query).read()
+        regex ='filter_page=(.+?)\t\t\t.*>&gt;&gt;</a>'
+        pattern =  re.compile(regex)
+        pages = re.findall(pattern,htmltext)
+        for page in range(1,int(pages[0])):
+            print "page "+str(page)
+            time.sleep(2)
+            request = urllib2.Request("http://www.exploit-db.com/search/?action=search&filter_page="+str(page)+"&filter_description="+query,None,self.headers)
+            htmltext = urllib2.urlopen(request).read()
+            regex = '<a href="http://www.exploit-db.com/download/(.+?)">'
+            pattern =  re.compile(regex)
+            ExploitID = re.findall(pattern,htmltext)
+            for Eid in ExploitID:
+                htmltext = urllib2.urlopen("http://www.exploit-db.com/exploits/"+str(Eid)+"/").read()
+                regex = '\?option=(.+?)\&'
+                pattern =  re.compile(regex)
+                JoomlaComponent = re.findall(pattern,htmltext)
+                print JoomlaComponent
+                try:
+                    f.write("%s\n" % JoomlaComponent[0])
+                except IndexError:
+                    pass
 
 
 
@@ -110,57 +137,51 @@ class OutputReport:
     #def XML:
         pass
     
-class FindVulnerabilities:
+class Scanner:
     def __init__(self):
         self.agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
         self.headers={'User-Agent':self.agent,}
-    
-    def ShodanSearch(self,query):
 
-        try:
-                # Setup the api
-                api = WebAPI(SHODAN_API_KEY)
                 
-                
-                
-                # Perform the search
-                result = api.msf.search(query)
-                    
-                print result
-                
-                # Loop through the matches and print each IP
-                for host in result['matches']:
-                        print host['ip']
-        except Exception, e:
-                print 'Error: %s' % e
-                sys.exit(1)
-                
-    def ExploitDBSearch(self,query):
-        f = open("joomla_plugins.txt", "a")
-        print "[*] Downloading Joomla plugins"
+    def GetPlugins(self):
+        #No thread Method =============
+        plugins = open('wp_plugins.txt')
+        for plugin in plugins:
+            req = urllib2.Request('http://192.168.71.133/wp/plugins/'+plugin[0]+'/',None,self.headers)
+            try:
+                urllib2.urlopen(req)
+                print plugin[0]
+            except urllib2.HTTPError, e:
+                #print e.code
+                pass
+        #==============================
         
-        htmltext = urllib2.urlopen("http://www.exploit-db.com/search/?action=search&filter_page=1&filter_description="+query).read()
-        regex ='filter_page=(.+?)\t\t\t.*>&gt;&gt;</a>'
-        pattern =  re.compile(regex)
-        pages = re.findall(pattern,htmltext)
-        for page in range(1,int(pages[0])):
-            print "page "+str(page)
-            time.sleep(2)
-            request = urllib2.Request("http://www.exploit-db.com/search/?action=search&filter_page="+str(page)+"&filter_description="+query,None,self.headers)
-            htmltext = urllib2.urlopen(request).read()
-            regex = '<a href="http://www.exploit-db.com/download/(.+?)">'
-            pattern =  re.compile(regex)
-            ExploitID = re.findall(pattern,htmltext)
-            for Eid in ExploitID:
-                htmltext = urllib2.urlopen("http://www.exploit-db.com/exploits/"+str(Eid)+"/").read()
-                regex = '\?option=(.+?)\&'
-                pattern =  re.compile(regex)
-                JoomlaComponent = re.findall(pattern,htmltext)
-                print JoomlaComponent
-                try:
-                    f.write("%s\n" % JoomlaComponent[0])
-                except IndexError:
-                    pass
+        # called by each thread
+    def GetPluginsTread(self,plugin):
+        url = 'http://192.168.71.133/wp/wp-content/plugins/'+plugin
+        #print url
+        req = urllib2.Request(url)
+        try:
+            urllib2.urlopen(req)
+            print plugin
+        except urllib2.HTTPError, e:
+            #print e.code
+            pass
+        
+    
+    plugins = [line.strip() for line in open('wp_plugins.txt')]
+    
+    threadlist = []
+    q = Queue.Queue()
+    
+    for u in plugins:
+        t = threading.Thread(target=GetPluginsTread, args=(u,u))
+        t.daemon = True
+        t.start()
+        threadlist.append(t)
+    
+    for i in threadlist:
+        i.join()
 
                 
                 
@@ -216,7 +237,7 @@ def WriteTextFile(fn,s):
     f.close()
     
 def usage(version):
-    print "CMScan tool v"+str(version)+" - Automatic CMS Scanner\nUsage: " + os.path.basename(sys.argv[0]) + """ -u <URL>
+    print "cmsmap tool v"+str(version)+" - Automatic CMS Scanner\nUsage: " + os.path.basename(sys.argv[0]) + """ -u <URL>
           -u, --url      target URL (e.g. 'https://abc.test.com:8080/')
           -v, --verbose  verbose mode (Default: false)
           -h, --help 
@@ -256,13 +277,23 @@ if __name__ == "__main__":
     # if plugins don't exist (first time of running) then initiliaze
     if not os.path.exists('wp_plugins.txt' or 'joomla_plugins.txt' or 'drupal_plugins.txt'):
         initializer = Initialize()
-        finder = FindVulnerabilities()
         
-    
         #initializer.GetWordPressPlugins()
         #initializer.GetDrupalPlugins()
         #initializer.WordPressPlugins()
-        finder.ExploitDBSearch("Joomla")
+        #initializer.ExploitDBSearch("Joomla","joomla_plugins.txt")
+        #initializer.ExploitDBSearch("Wordpress","wp_plugins.txt")
+        #initializer.ExploitDBSearch("Drupal","drupal_plugins.txt")
+        
+    #scanner = Scanner()
+  
+    #scanner.GetPluginsTread
+
+    start = time.time()
+    print "Start: ", start
+    end = time.time()
+    print "End: ", end
+    print end - start, "seconds"
 
         
         
