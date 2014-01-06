@@ -137,56 +137,63 @@ class OutputReport:
     #def XML:
         pass
     
-class Scanner:
-    def __init__(self):
+class Scanner(threading.Thread):
+    
+    def __init__(self,q):
+        threading.Thread.__init__ (self)
+        self.q = q
         self.agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
         self.headers={'User-Agent':self.agent,}
 
-                
-    def GetPlugins(self):
-        #No thread Method =============
-        plugins = open('wp_plugins.txt')
-        for plugin in plugins:
-            req = urllib2.Request('http://192.168.71.133/wp/plugins/'+plugin[0]+'/',None,self.headers)
+    def run(self):
+        while True:
+            # Get plugin from plugin queue
+            plugin = self.q.get()
+            url = 'http://192.168.71.133/wp/wp-content/plugins/'+plugin
+            req = urllib2.Request(url)
             try:
                 urllib2.urlopen(req)
-                print plugin[0]
+                print plugin
+            except urllib2.HTTPError, e:
+                #print e.code
+                pass
+            self.q.task_done()
+
+    def GetPlugins(self):
+        #Old Method === No thread Method =============
+        for plugin in self.plugins:
+            req = urllib2.Request('http://192.168.71.133/wp/wp-content/plugins/'+plugin+'/')
+            try:
+                urllib2.urlopen(req)
+                print plugin
             except urllib2.HTTPError, e:
                 #print e.code
                 pass
         #==============================
         
-        # called by each thread
-    def GetPluginsTread(self,plugin):
-        url = 'http://192.168.71.133/wp/wp-content/plugins/'+plugin
-        #print url
-        req = urllib2.Request(url)
-        try:
-            urllib2.urlopen(req)
-            print plugin
-        except urllib2.HTTPError, e:
-            #print e.code
-            pass
+   
+class ScanWordpressPlugins:
+    def __init__(self):
+        self.queue_num = 5
+        self.thread_num = 10
+        self.plugins = [line.strip() for line in open('wp_plugins.txt')]
         
-    
-    plugins = [line.strip() for line in open('wp_plugins.txt')]
-    
-    threadlist = []
-    q = Queue.Queue()
-    
-    for u in plugins:
-        t = threading.Thread(target=GetPluginsTread, args=(u,u))
-        t.daemon = True
-        t.start()
-        threadlist.append(t)
-    
-    for i in threadlist:
-        i.join()
-
-                
-                
+        # Create Code
+        q = Queue.Queue(self.queue_num)
         
-    
+        # Spawn all threads into code
+        for u in range(self.thread_num):
+            t = Scanner(q)
+            t.daemon = True
+            t.start()
+        
+        # Add all plugins to the queue
+        for i in self.plugins:
+            q.put(i)
+        
+        q.join()
+        
+        
 class BruteForce:
         pass
     
@@ -274,7 +281,7 @@ if __name__ == "__main__":
                 usage(version)
                 sys.exit()
     
-    # if plugins don't exist (first time of running) then initiliaze
+    # if plugins don't exist (first time of running) then initialize
     if not os.path.exists('wp_plugins.txt' or 'joomla_plugins.txt' or 'drupal_plugins.txt'):
         initializer = Initialize()
         
@@ -285,12 +292,13 @@ if __name__ == "__main__":
         #initializer.ExploitDBSearch("Wordpress","wp_plugins.txt")
         #initializer.ExploitDBSearch("Drupal","drupal_plugins.txt")
         
-    #scanner = Scanner()
+    
   
     #scanner.GetPluginsTread
 
     start = time.time()
     print "Start: ", start
+    #scanner = ScanWordpressPlugins()
     end = time.time()
     print "End: ", end
     print end - start, "seconds"
