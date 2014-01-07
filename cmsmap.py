@@ -130,6 +130,7 @@ class WPScan:
     def __init__(self,url):
         self.url = url
         WPScan.WPVersion(self)
+        WPScan.WPConfigFiles(self)
         WPScan.DefaultFiles(self)
         
     def WPVersion(self):
@@ -142,6 +143,16 @@ class WPScan:
         except urllib2.HTTPError, e:
             print e.code
             pass
+    def WPConfigFiles(self):
+        confFiles=['/wp-config.php.txt','/wp-config.old','/wp-config.php~','/wp-config.txt','/wp-config']
+        for file in confFiles:
+            req = urllib2.Request(self.url+file)
+            try:
+                urllib2.urlopen(req)
+                print "[*] Configuration File Found: " +self.url+file
+            except urllib2.HTTPError, e:
+                #print e.code
+                pass
 
     def DefaultFiles(self):
         # Check for default files
@@ -177,6 +188,7 @@ class JooScan:
     def __init__(self,url):
         self.url = url
         JooScan.JooVersion(self)
+        JooScan.JooConfigFiles(self)
         JooScan.DefaultFiles(self)
         
     def JooVersion(self):
@@ -187,8 +199,19 @@ class JooScan:
             version = re.findall(pattern,htmltext)
             print "[*] Joomla Version: "+str(version[0])
         except urllib2.HTTPError, e:
-            print e.code
-            pass        
+            #print e.code
+            pass
+        
+    def JooConfigFiles(self):
+        confFiles=['/configuration.php.txt','/configuration.old','/configuration.php~','/configuration.txt','/configuration']
+        for file in confFiles:
+            req = urllib2.Request(self.url+file)
+            try:
+                urllib2.urlopen(req)
+                print "[*] Configuration File Found: " +self.url+file
+            except urllib2.HTTPError, e:
+                #print e.code
+                pass        
     
     def DefaultFiles(self):
         # Check for default files
@@ -222,6 +245,7 @@ class DruScan:
     def __init__(self,url):
         self.url = url
         DruScan.DruVersion(self)
+        DruScan.DruConfigFiles(self)
         DruScan.DefaultFiles(self)
         
     def DruVersion(self):
@@ -231,10 +255,21 @@ class DruScan:
             pattern =  re.compile(regex)
             version = re.findall(pattern,htmltext)
             print "[*] Drupal Version: "+str(version[0])
-            
         except urllib2.HTTPError, e:
-            print e.code
-            pass              
+            #print e.code
+            pass   
+
+    def DruConfigFiles(self):
+        confFiles=['/sites/default/settings.php.txt','/sites/default/settings.old','/sites/default/settings.php~','/sites/default/settings.txt','/sites/default/settings']
+        for file in confFiles:
+            req = urllib2.Request(self.url+file)
+            try:
+                urllib2.urlopen(req)
+                print "[*] Configuration File Found: " +self.url+file
+            except urllib2.HTTPError, e:
+                #print e.code
+                pass   
+           
     def DefaultFiles(self):
         defFiles=['/README.txt',
                   '/robots.txt',
