@@ -112,19 +112,173 @@ class Initialize:
 
 class CMStype:
     # Detect type of CMS
-    pass
+    def __init__(self,url):
+        self.url = url
+        self.agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
+        self.headers={'User-Agent':self.agent,}
+        htmltext = urllib2.urlopen(self.url).read()
+        m = re.search("Wordpress", htmltext)
+        if m: print "[*] CMS Detection: Wordpress"; wordpress = WPScan(self.url)
+        m = re.search("Joomla", htmltext)
+        if m: print "[*] CMS Detection: Joomla"; joomla = JooScan(self.url)
+        m = re.search("Drupal", htmltext)
+        if m: print "[*] CMS Detection: Drupal"; drupal = DruScan(self.url)
+       
 
 class WPScan:
     # Scan WordPress site
-    pass
+    def __init__(self,url):
+        self.url = url
+        WPScan.WPVersion(self)
+        WPScan.DefaultFiles(self)
+        
+    def WPVersion(self):
+        try:
+            htmltext = urllib2.urlopen(self.url+'/readme.html').read()
+            regex = '<br /> Version (\d+\.\d+)'
+            pattern =  re.compile(regex)
+            version = re.findall(pattern,htmltext)
+            print "[*] Wordpress Version: "+str(version[0])
+        except urllib2.HTTPError, e:
+            print e.code
+            pass
+
+    def DefaultFiles(self):
+        # Check for default files
+        defFiles=['/readme.html',
+                  '/license.txt',
+                  '/wp-config-sample.php',
+                  '/wp-includes/images/crystal/license.txt',
+                  '/wp-includes/images/crystal/license.txt',
+                  '/wp-includes/js/plupload/license.txt',
+                  '/wp-includes/js/plupload/changelog.txt',
+                  '/wp-includes/js/tinymce/license.txt',
+                  '/wp-includes/js/tinymce/plugins/spellchecker/changelog.txt',
+                  '/wp-includes/js/swfupload/license.txt',
+                  '/wp-includes/ID3/license.txt',
+                  '/wp-includes/ID3/readme.txt',
+                  '/wp-includes/ID3/license.commercial.txt',
+                  '/wp-content/themes/twentythirteen/fonts/COPYING.txt',
+                  '/wp-content/themes/twentythirteen/fonts/LICENSE.txt'
+                  ]
+        for file in defFiles:
+            req = urllib2.Request(self.url+file)
+            try:
+                urllib2.urlopen(req)
+                print "[*] Info Disclosure: " +self.url+file
+            except urllib2.HTTPError, e:
+                #print e.code
+                pass
+            
+        # Check for default files in plugins directory such as README.txt, readme.txt, licences.txt, changelog.txt
 
 class JooScan:
     # Scan Joomla site
-    pass
+    def __init__(self,url):
+        self.url = url
+        JooScan.JooVersion(self)
+        JooScan.DefaultFiles(self)
+        
+    def JooVersion(self):
+        try:
+            htmltext = urllib2.urlopen(self.url+'/joomla.xml').read()
+            regex = '<version>(.+?)</version>'
+            pattern =  re.compile(regex)
+            version = re.findall(pattern,htmltext)
+            print "[*] Joomla Version: "+str(version[0])
+        except urllib2.HTTPError, e:
+            print e.code
+            pass        
+    
+    def DefaultFiles(self):
+        # Check for default files
+        defFiles=['/README.txt',
+                  '/htaccess.txt',
+                  '/administrator/templates/hathor/LICENSE.txt',
+                  '/web.config.txt',
+                  '/joomla.xml',
+                  '/robots.txt.dist',
+                  '/LICENSE.txt',
+                  '/media/jui/fonts/icomoon-license.txt',
+                  '/media/editors/tinymce/jscripts/tiny_mce/license.txt',
+                  '/media/editors/tinymce/jscripts/tiny_mce/plugins/style/readme.txt',
+                  '/libraries/idna_convert/ReadMe.txt',
+                  '/libraries/simplepie/README.txt',
+                  '/libraries/simplepie/LICENSE.txt',
+                  '/libraries/simplepie/idn/ReadMe.txt',
+                  ]
+        
+        for file in defFiles:
+            req = urllib2.Request(self.url+file)
+            try:
+                urllib2.urlopen(req)
+                print "[*] Info Disclosure: " +self.url+file
+            except urllib2.HTTPError, e:
+                #print e.code
+                pass
 
 class DruScan:
     # Scan Drupal site
-    pass
+    def __init__(self,url):
+        self.url = url
+        DruScan.DruVersion(self)
+        DruScan.DefaultFiles(self)
+        
+    def DruVersion(self):
+        try:
+            htmltext = urllib2.urlopen(self.url+'/CHANGELOG.txt').read()
+            regex = 'Drupal (\d+\.\d+),'
+            pattern =  re.compile(regex)
+            version = re.findall(pattern,htmltext)
+            print "[*] Drupal Version: "+str(version[0])
+            
+        except urllib2.HTTPError, e:
+            print e.code
+            pass              
+    def DefaultFiles(self):
+        defFiles=['/README.txt',
+                  '/robots.txt',
+                  '/INSTALL.mysql.txt',
+                  '/MAINTAINERS.txt',
+                  '/profiles/standard/translations/README.txt',
+                  '/profiles/minimal/translations/README.txt',
+                  '/INSTALL.pgsql.txt',
+                  '/UPGRADE.txt',
+                  '/CHANGELOG.txt',
+                  '/INSTALL.sqlite.txt',
+                  '/LICENSE.txt',
+                  '/INSTALL.txt',
+                  '/COPYRIGHT.txt',
+                  '/web.config',
+                  '/modules/README.txt',
+                  '/modules/simpletest/files/README.txt'
+                  '/modules/simpletest/files/javascript-1.txt',
+                  '/modules/simpletest/files/php-1.txt',
+                  '/modules/simpletest/files/sql-1.txt',
+                  '/modules/simpletest/files/html-1.txt',
+                  '/modules/simpletest/tests/common_test_info.txt',
+                  '/modules/filter/tests/filter.url-output.txt',
+                  '/modules/filter/tests/filter.url-input.txt',
+                  '/modules/search/tests/UnicodeTest.txt',
+                  '/themes/README.txt',
+                  '/themes/stark/README.txt',
+                  '/sites/README.txt',
+                  '/sites/all/modules/README.txt',
+                  '/sites/all/themes/README.txt',
+                  '/modules/simpletest/files/html-2.html',
+                  '/modules/color/preview.html',
+                  '/themes/bartik/color/preview.html'
+                  ]
+        
+        for file in defFiles:
+            req = urllib2.Request(self.url+file)
+            try:
+                urllib2.urlopen(req)
+                print "[*] Info Disclosure: " +self.url+file
+            except urllib2.HTTPError, e:
+                #print e.code
+                pass
+
 
 class OutputReport:
 
@@ -138,9 +292,10 @@ class OutputReport:
         pass
     
 class Scanner(threading.Thread):
-    
-    def __init__(self,q):
+    # Multi-threading Scan Class (just for Wordpress for now) 
+    def __init__(self,url,q):
         threading.Thread.__init__ (self)
+        self.url = url
         self.q = q
         self.agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
         self.headers={'User-Agent':self.agent,}
@@ -149,8 +304,7 @@ class Scanner(threading.Thread):
         while True:
             # Get plugin from plugin queue
             plugin = self.q.get()
-            url = 'http://192.168.71.133/wp/wp-content/plugins/'+plugin
-            req = urllib2.Request(url)
+            req = urllib2.Request(self.url+'/wp-content/plugins/'+plugin)
             try:
                 urllib2.urlopen(req)
                 print plugin
@@ -173,7 +327,7 @@ class Scanner(threading.Thread):
         
    
 class ScanWordpressPlugins:
-    def __init__(self):
+    def __init__(self, url):
         self.queue_num = 5
         self.thread_num = 10
         self.plugins = [line.strip() for line in open('wp_plugins.txt')]
@@ -183,7 +337,7 @@ class ScanWordpressPlugins:
         
         # Spawn all threads into code
         for u in range(self.thread_num):
-            t = Scanner(q)
+            t = Scanner(url,q)
             t.daemon = True
             t.start()
         
@@ -292,13 +446,11 @@ if __name__ == "__main__":
         #initializer.ExploitDBSearch("Wordpress","wp_plugins.txt")
         #initializer.ExploitDBSearch("Drupal","drupal_plugins.txt")
         
-    
-  
-    #scanner.GetPluginsTread
 
     start = time.time()
     print "Start: ", start
-    #scanner = ScanWordpressPlugins()
+    #scanner = ScanWordpressPlugins(url)
+    finder = CMStype(url)
     end = time.time()
     print "End: ", end
     print end - start, "seconds"
