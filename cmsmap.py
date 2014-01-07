@@ -14,9 +14,7 @@ except:
     print "No pyDNS installed"
 
 version=0.1
-SHODAN_API_KEY = "AEzTfpDGdjHukHq48105386CHnunaTXB"
- 
-    
+  
 class Initialize:
     # Save Wordpress, Joomla and Drupal plugins in a local file
     # Set default parameters 
@@ -25,14 +23,18 @@ class Initialize:
         self.headers={'User-Agent':self.agent,}
     
     def GetWordPressPlugins(self):
+        # Download Wordpress Plugins from Wordpress SVN website and popular plugins page
         print "[*] Downloading WordPress plugins"
-        f = open("plugins.txt", "a")
+        f = open("wp_plugins.txt", "a")
+        
+        # from SVN Website
         htmltext = urllib2.urlopen("http://plugins.svn.wordpress.org").read()
         regex = '">(.+?)/</a></li>'
         pattern =  re.compile(regex)
         plugins = re.findall(pattern,htmltext)
         for plugin in plugins: f.write("%s\n" % plugin)
         
+        # from popular plugins page
         for n in range(1,1844):
             while True:
                 try:
@@ -60,30 +62,90 @@ class Initialize:
         # write to file
         f.close()
         #for plugin in plugins: f.write("%s\n" % plugin, "a")  
-        print "[*] Writing file: %s" % ('plugins.txt')
+        print "[*] Wordpress Plugin File: %s" % ('wp_plugins.txt')
+   
+    def GetWordpressPluginsExploitDB(self):
+        # Download Joomla Plugins from ExploitDB website
+        f = open("wp_plugins.txt", "a")
+        print "[*] Downloading Wordpress plugins from ExploitDB website"
         
+        htmltext = urllib2.urlopen("http://www.exploit-db.com/search/?action=search&filter_page=1&filter_description=Wordpress").read()
+        regex ='filter_page=(.+?)\t\t\t.*>&gt;&gt;</a>'
+        pattern =  re.compile(regex)
+        pages = re.findall(pattern,htmltext)
+        for page in range(1,int(pages[0])):
+            time.sleep(2)
+            request = urllib2.Request("http://www.exploit-db.com/search/?action=search&filter_page="+str(page)+"&filter_description=Wordpress",None,self.headers)
+            htmltext = urllib2.urlopen(request).read()
+            regex = '<a href="http://www.exploit-db.com/download/(.+?)">'
+            pattern =  re.compile(regex)
+            ExploitID = re.findall(pattern,htmltext)
+            print page
+            for Eid in ExploitID:
+                htmltext = urllib2.urlopen("http://www.exploit-db.com/download/"+str(Eid)+"/").read()
+                regex = '/plugins/(.+?)/'
+                pattern =  re.compile(regex)
+                WPplugins = re.findall(pattern,htmltext)
+                print Eid
+                print WPplugins
+                for plugin in WPplugins:
+                    try:
+                        f.write("%s\n" % plugin)
+                    except IndexError:
+                        pass
+        f.close()
+        print "[*] Wordpress Plugin File: %s" % ('wp_plugins.txt')     
 
     def GetJoomlaPlugins(self):
         pass
     
+    def GetJoomlaPluginsExploitDB(self):
+        # Download Joomla Plugins from ExploitDB website
+        f = open("joomla_plugins.txt", "a")
+        print "[*] Downloading Joomla plugins from ExploitDB website"
+        htmltext = urllib2.urlopen("http://www.exploit-db.com/search/?action=search&filter_page=1&filter_description=Joomla").read()
+        regex ='filter_page=(.+?)\t\t\t.*>&gt;&gt;</a>'
+        pattern =  re.compile(regex)
+        pages = re.findall(pattern,htmltext)
+        for page in range(1,int(pages[0])):
+            time.sleep(2)
+            request = urllib2.Request("http://www.exploit-db.com/search/?action=search&filter_page="+str(page)+"&filter_description=Joomla",None,self.headers)
+            htmltext = urllib2.urlopen(request).read()
+            regex = '<a href="http://www.exploit-db.com/download/(.+?)">'
+            pattern =  re.compile(regex)
+            ExploitID = re.findall(pattern,htmltext)
+            for Eid in ExploitID:
+                htmltext = urllib2.urlopen("http://www.exploit-db.com/exploits/"+str(Eid)+"/").read()
+                regex = '\?option=(.+?)\&'
+                pattern =  re.compile(regex)
+                JoomlaComponent = re.findall(pattern,htmltext)
+                try:
+                    f.write("%s\n" % JoomlaComponent[0])
+                except IndexError:
+                    pass
+        f.close()
+        print "[*] Joomla Plugin File: %s" % ('joomla_plugins.txt')
+
     def GetDrupalPlugins(self):
+        # Download Drupal Plugins from Drupal website
         print "[*] Downloading Drupal plugins"
         f = open("drupal_plugins.txt", "a")
         for n in range(0,969):
-            htmltext = urllib2.urlopen("https://drupal.org/project/modules?page="+str(n)+"+&solrsort=iss_project_release_usage desc&f[0]=bundle:project_project&f[1]=im_vid_3:14&f[2]=bundle:project_project").read()
+            htmltext = urllib2.urlopen("https://drupal.org/project/project_module?page="+str(n)+"&solrsort=iss_project_release_usage%20desc&").read()
             regex = '<a href="/project/(\w*?)">'
             pattern =  re.compile(regex)
             plugins_per_page = re.findall(pattern,htmltext)
             for plugin in plugins_per_page: f.write("%s\n" % plugin) 
             sys.stdout.write('\r')
             sys.stdout.write("[%-100s] %d%%" % ('='*((100*(n+1))/969), (100*(n+1))/969))
-            sys.stdout.flush()
-        print "[*] Writing file: %s" % ('drupal_plugins.txt')
-        sys.exit() 
+            sys.stdout.flush()            
+        print "[*] Drupal Plugin File: %s" % ('drupal_plugins.txt') 
+
 
     def ExploitDBSearch(self,query,file):
+        # Download Joomla Plugins from ExploitDB website
         f = open(file, "a")
-        print "[*] Downloading "+query+" plugins"
+        print "[*] Downloading "+query+" plugins from ExploitDB website"
         
         htmltext = urllib2.urlopen("http://www.exploit-db.com/search/?action=search&filter_page=1&filter_description="+query).read()
         regex ='filter_page=(.+?)\t\t\t.*>&gt;&gt;</a>'
@@ -473,11 +535,12 @@ if __name__ == "__main__":
     # if plugins don't exist (first time of running) then initialize
     if not os.path.exists('wp_plugins.txt' or 'joomla_plugins.txt' or 'drupal_plugins.txt'):
         initializer = Initialize()
-        
         #initializer.GetWordPressPlugins()
+        #initializer.GetJoomlaPluginsExploitDB()
+        initializer.GetWordpressPluginsExploitDB()
         #initializer.GetDrupalPlugins()
-        #initializer.WordPressPlugins()
-        #initializer.ExploitDBSearch("Joomla","joomla_plugins.txt")
+        
+        #initializer.ExploitDBSearch("Joomla")
         #initializer.ExploitDBSearch("Wordpress","wp_plugins.txt")
         #initializer.ExploitDBSearch("Drupal","drupal_plugins.txt")
         
@@ -485,7 +548,7 @@ if __name__ == "__main__":
     start = time.time()
     print "Start: ", start
     #scanner = ScanWordpressPlugins(url)
-    finder = CMStype(url)
+    #finder = CMStype(url)
     end = time.time()
     print "End: ", end
     print end - start, "seconds"
