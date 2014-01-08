@@ -12,7 +12,7 @@ class Initialize:
         self.headers={'User-Agent':self.agent,}
     
     def GetWordPressPlugins(self):
-        # Download Wordpress Plugins from Wordpress SVN website and popular plugins page
+        # Download Wordpress Plugins from Wordpress SVN website and popular Wordpress plugins page
         print "[*] Downloading WordPress plugins"
         f = open("wp_plugins.txt", "a")
         
@@ -23,7 +23,7 @@ class Initialize:
         plugins = re.findall(pattern,htmltext)
         for plugin in plugins: f.write("%s\n" % plugin)
         
-        # from popular plugins page
+        # from popular Wordpress plugins page
         for n in range(1,1844):
             while True:
                 try:
@@ -44,17 +44,18 @@ class Initialize:
                 break
             
         # sort unique
-        #oldplugins = [line.strip() for line in open('plugins.txt')]
+        #oldplugins = [line.strip() for line in open('wp_plugins.txt')]
         #plugins = plugins + oldplugins
-        #plugins = sorted(set(plugins))
-        
+        #plugins = sorted(set(plugins))        
         # write to file
+        #for plugin in plugins: f.write("%s\n" % plugin, "a")
+        
         f.close()
-        #for plugin in plugins: f.write("%s\n" % plugin, "a")  
+         
         print "[*] Wordpress Plugin File: %s" % ('wp_plugins.txt')
    
     def GetWordpressPluginsExploitDB(self):
-        # Download Joomla Plugins from ExploitDB website
+        # Download Wordpress Plugins from ExploitDB website
         f = open("wp_plugins.txt", "a")
         print "[*] Downloading Wordpress plugins from ExploitDB website"
         
@@ -86,6 +87,7 @@ class Initialize:
         print "[*] Wordpress Plugin File: %s" % ('wp_plugins.txt')     
 
     def GetJoomlaPlugins(self):
+        # Not Implemented yet
         pass
     
     def GetJoomlaPluginsExploitDB(self):
@@ -135,7 +137,7 @@ class Initialize:
 
 
 class CMStype:
-    # Detect type of CMS
+    # Detect type of CMS -> Maybe add it to the main after Initialiazer 
     def __init__(self,url):
         self.url = url
         self.agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
@@ -153,9 +155,17 @@ class WPScan:
     # Scan WordPress site
     def __init__(self,url):
         self.url = url
+        self.queue_num = 5
+        self.thread_num = 10
+        self.plugins = [line.strip() for line in open('wp_plugins.txt')]
+        
         WPScan.WPVersion(self)
         WPScan.WPConfigFiles(self)
-        WPScan.DefaultFiles(self)
+        WPScan.WPplugins(self)
+        ExploitDBSearch(self.url, pluginsFound)
+        WPScan.WPDefaultFiles(self)
+       
+        
         
     def WPVersion(self):
         try:
@@ -178,7 +188,7 @@ class WPScan:
                 #print e.code
                 pass
 
-    def DefaultFiles(self):
+    def WPDefaultFiles(self):
         # Check for default files
         defFiles=['/readme.html',
                   '/license.txt',
@@ -206,6 +216,22 @@ class WPScan:
                 pass
             
         # Check for default files in plugins directory such as README.txt, readme.txt, licences.txt, changelog.txt
+
+    def  WPplugins(self):
+        print "[*] Searching Wordpress plugins ..."
+        # Create Code
+        q = Queue.Queue(self.queue_num)
+        
+        # Spawn all threads into code
+        for u in range(self.thread_num):
+            t = Scanner(url,q)
+            t.daemon = True
+            t.start()
+        
+        # Add all plugins to the queue
+        for i in self.plugins:
+            q.put(i)  
+        q.join()
 
 class JooScan:
     # Scan Joomla site
@@ -364,7 +390,7 @@ class ExploitDBSearch:
             ExploitID = re.findall(pattern,htmltext)
             print plugin
             for Eid in ExploitID:
-                print "[*] Vulnerable Plugin: http://www.exploit-db.com/"+Eid
+                print "\t[*] Vulnerable Plugin: http://www.exploit-db.com/"+Eid
                 
 
     
@@ -393,7 +419,7 @@ class Scanner(threading.Thread):
             self.q.task_done()
 
     def GetPlugins(self):
-        #Old Method === No thread Method =============
+        #=== No thread Method =============
         for plugin in self.plugins:
             req = urllib2.Request('http://192.168.71.133/wp/wp-content/plugins/'+plugin+'/')
             try:
@@ -402,29 +428,10 @@ class Scanner(threading.Thread):
             except urllib2.HTTPError, e:
                 #print e.code
                 pass
-        #==============================
+        #==================================
         
    
-class ScanWordpressPlugins:
-    def __init__(self, url):
-        self.queue_num = 5
-        self.thread_num = 10
-        self.plugins = [line.strip() for line in open('wp_plugins.txt')]
-        
-        # Create Code
-        q = Queue.Queue(self.queue_num)
-        
-        # Spawn all threads into code
-        for u in range(self.thread_num):
-            t = Scanner(url,q)
-            t.daemon = True
-            t.start()
-        
-        # Add all plugins to the queue
-        for i in self.plugins:
-            q.put(i)
-        
-        q.join()
+
 
 
         
@@ -503,10 +510,8 @@ if __name__ == "__main__":
 
     start = time.time()
     print "Start: ", start
-    scanner = ScanWordpressPlugins(url)
     print pluginsFound
-    searcher = ExploitDBSearch(url, pluginsFound)
-    #finder = CMStype(url)
+    finder = CMStype(url)
     end = time.time()
     print "End: ", end
     print end - start, "seconds"
