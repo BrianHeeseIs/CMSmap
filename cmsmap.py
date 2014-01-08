@@ -1,17 +1,6 @@
 #!/usr/bin/python
 
 import smtplib, base64, os, sys, getopt, urllib2, urllib, re, socket, time, itertools, urlparse, threading, Queue, multiprocessing
-try:
-    #from BeautifulSoup import BeautifulSoup
-    from bs4 import BeautifulSoup
-except:
-    print "No BeautifulSoup installed"
-    print "See: http://www.crummy.com/software/BeautifulSoup/#Download"
-    sys.exit()
-try:
-    import DNS
-except:
-    print "No pyDNS installed"
 
 version=0.1
   
@@ -142,33 +131,6 @@ class Initialize:
         print "[*] Drupal Plugin File: %s" % ('drupal_plugins.txt') 
 
 
-    def ExploitDBSearch(self,query,file):
-        # Download Joomla Plugins from ExploitDB website
-        f = open(file, "a")
-        print "[*] Downloading "+query+" plugins from ExploitDB website"
-        
-        htmltext = urllib2.urlopen("http://www.exploit-db.com/search/?action=search&filter_page=1&filter_description="+query).read()
-        regex ='filter_page=(.+?)\t\t\t.*>&gt;&gt;</a>'
-        pattern =  re.compile(regex)
-        pages = re.findall(pattern,htmltext)
-        for page in range(1,int(pages[0])):
-            print "page "+str(page)
-            time.sleep(2)
-            request = urllib2.Request("http://www.exploit-db.com/search/?action=search&filter_page="+str(page)+"&filter_description="+query,None,self.headers)
-            htmltext = urllib2.urlopen(request).read()
-            regex = '<a href="http://www.exploit-db.com/download/(.+?)">'
-            pattern =  re.compile(regex)
-            ExploitID = re.findall(pattern,htmltext)
-            for Eid in ExploitID:
-                htmltext = urllib2.urlopen("http://www.exploit-db.com/exploits/"+str(Eid)+"/").read()
-                regex = '\?option=(.+?)\&'
-                pattern =  re.compile(regex)
-                JoomlaComponent = re.findall(pattern,htmltext)
-                print JoomlaComponent
-                try:
-                    f.write("%s\n" % JoomlaComponent[0])
-                except IndexError:
-                    pass
 
 
 
@@ -388,6 +350,24 @@ class OutputReport:
     #def XML:
         pass
     
+class ExploitDBSearch:
+    def __init__(self,url,pluginList):
+        self.url = url
+        self.pluginList = pluginList
+        self.agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
+        self.headers={'User-Agent':self.agent,}
+        print "[*] Searching vulnerable plugins from ExploitDB website"
+        for plugin in self.pluginList:
+            htmltext = urllib2.urlopen("http://www.exploit-db.com/search/?action=search&filter_exploit_text="+plugin).read()
+            regex = '/download/(.+?)">'
+            pattern =  re.compile(regex)
+            ExploitID = re.findall(pattern,htmltext)
+            print plugin
+            for Eid in ExploitID:
+                print "[*] Vulnerable Plugin: http://www.exploit-db.com/"+Eid
+                
+
+    
 class Scanner(threading.Thread):
     # Multi-threading Scan Class (just for Wordpress for now) 
     def __init__(self,url,q):
@@ -396,6 +376,7 @@ class Scanner(threading.Thread):
         self.q = q
         self.agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
         self.headers={'User-Agent':self.agent,}
+        
 
     def run(self):
         while True:
@@ -405,6 +386,7 @@ class Scanner(threading.Thread):
             try:
                 urllib2.urlopen(req)
                 print plugin
+                pluginsFound.append(plugin)
             except urllib2.HTTPError, e:
                 #print e.code
                 pass
@@ -443,6 +425,8 @@ class ScanWordpressPlugins:
             q.put(i)
         
         q.join()
+
+
         
         
 class BruteForce:
@@ -454,37 +438,9 @@ class PostExploit:
 class JobQue:
         pass
 
-#=======================
-        '''
-        def th(ur):
-            base = "http://finance.yahoo.com/q?="
-            regex = "<title>(.+?)</title>"
-            pattern =  re.compile(regex)
-            htmltext = urllib.urlopen(url).read()
-            results = re.findall(pattern,htmltext)
-            print results
-        
-        symbolslist = open("symbols.txt").read()
-        symbolslist = symbolslist.replace(" ","").split()
-        
-#=======================
-        # called by each thread
-        def get_url(q, url):
-            q.put(urllib2.urlopen(url).read())
-        
-        theurls = 'http://google.com http://yahoo.com'.split()
-        
-        q = Queue.Queue()
-        
-        for u in theurls:
-            t = threading.Thread(target=get_url, args = (q,u))
-            t.daemon = True
-            t.start()
-        
-        s = q.get()
-        print s
-        '''
-#======================
+# Global Variables 
+
+pluginsFound = []
 
 
 # Global Methos
@@ -537,7 +493,7 @@ if __name__ == "__main__":
         initializer = Initialize()
         #initializer.GetWordPressPlugins()
         #initializer.GetJoomlaPluginsExploitDB()
-        initializer.GetWordpressPluginsExploitDB()
+        #initializer.GetWordpressPluginsExploitDB()
         #initializer.GetDrupalPlugins()
         
         #initializer.ExploitDBSearch("Joomla")
@@ -547,7 +503,9 @@ if __name__ == "__main__":
 
     start = time.time()
     print "Start: ", start
-    #scanner = ScanWordpressPlugins(url)
+    scanner = ScanWordpressPlugins(url)
+    print pluginsFound
+    searcher = ExploitDBSearch(url, pluginsFound)
     #finder = CMStype(url)
     end = time.time()
     print "End: ", end
