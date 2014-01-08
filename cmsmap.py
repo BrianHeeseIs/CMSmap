@@ -160,14 +160,14 @@ class WPScan:
         self.url = url
         self.queue_num = 5
         self.thread_num = 10
-        self.cmstype = "/wp-content/plugins/"
+        self.pluginPath = "/wp-content/plugins/"
         self.plugins = [line.strip() for line in open('wp_plugins.txt')]
         
-        WPScan.WPVersion(self)
-        WPScan.WPConfigFiles(self)
-        WPScan.WPplugins(self)
-        ExploitDBSearch(self.url, pluginsFound)
-        WPScan.WPDefaultFiles(self)
+        self.WPVersion()
+        self.WPConfigFiles()
+        self.WPplugins()
+        ExploitDBSearch(self.url, 'Wordpress', pluginsFound)
+        self.WPDefaultFiles()
                
     def WPVersion(self):
         try:
@@ -227,7 +227,7 @@ class WPScan:
         
         # Spawn all threads into code
         for u in range(self.thread_num):
-            t = ThreadScanner(self.url,self.cmstype,q)
+            t = ThreadScanner(self.url,self.pluginPath,q)
             t.daemon = True
             t.start()
         
@@ -240,9 +240,17 @@ class JooScan:
     # Scan Joomla site
     def __init__(self,url):
         self.url = url
-        JooScan.JooVersion(self)
-        JooScan.JooConfigFiles(self)
-        JooScan.DefaultFiles(self)
+        self.queue_num = 5
+        self.thread_num = 10
+        #self.cmstype = "?option="
+        self.pluginPath = "/components/"
+        self.plugins = [line.strip() for line in open('joomla_plugins.txt')]
+        
+        self.JooVersion()
+        self.JooConfigFiles()
+        self.JooComponents()
+        ExploitDBSearch(self.url, "Joomla", pluginsFound)
+        self.JooDefaultFiles()
         
     def JooVersion(self):
         try:
@@ -266,7 +274,7 @@ class JooScan:
                 #print e.code
                 pass        
     
-    def DefaultFiles(self):
+    def JooDefaultFiles(self):
         # Check for default files
         defFiles=['/README.txt',
                   '/htaccess.txt',
@@ -293,13 +301,36 @@ class JooScan:
                 #print e.code
                 pass
 
+    def JooComponents(self):
+        print "[*] Searching Joomla Components ..."
+        # Create Code
+        q = Queue.Queue(self.queue_num)
+        
+        # Spawn all threads into code
+        for u in range(self.thread_num):
+            t = ThreadScanner(self.url,self.pluginPath,q)
+            t.daemon = True
+            t.start()
+        
+        # Add all plugins to the queue
+        for i in self.plugins:
+            q.put(i)  
+        q.join()
+        
 class DruScan:
     # Scan Drupal site
     def __init__(self,url):
         self.url = url
+        self.queue_num = 5
+        self.thread_num = 10
+        self.pluginPath = "/modules/"
+        self.plugins = [line.strip() for line in open('drupal_plugins.txt')]
+        
         DruScan.DruVersion(self)
-        DruScan.DruConfigFiles(self)
-        DruScan.DefaultFiles(self)
+        self.DruConfigFiles()
+        self.DruModules()
+        ExploitDBSearch(self.url, "Drupal", pluginsFound)
+        self.DefaultFiles()
         
     def DruVersion(self):
         try:
@@ -367,6 +398,21 @@ class DruScan:
                 #print e.code
                 pass
 
+    def DruModules(self):
+        print "[*] Searching Drupal Modules ..."
+        # Create Code
+        q = Queue.Queue(self.queue_num)
+        
+        # Spawn all threads into code
+        for u in range(self.thread_num):
+            t = ThreadScanner(self.url,self.pluginPath,q)
+            t.daemon = True
+            t.start()
+        
+        # Add all plugins to the queue
+        for i in self.plugins:
+            q.put(i)  
+        q.join()
 
 class OutputReport:
 
@@ -380,20 +426,20 @@ class OutputReport:
         pass
     
 class ExploitDBSearch:
-    def __init__(self,url,pluginList):
+    def __init__(self,url,cmstype,pluginList):
         self.url = url
         self.pluginList = pluginList
         self.agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
         self.headers={'User-Agent':self.agent,}
         print "[*] Searching vulnerable plugins from ExploitDB website"
         for plugin in self.pluginList:
-            htmltext = urllib2.urlopen("http://www.exploit-db.com/search/?action=search&filter_exploit_text="+plugin).read()
+            htmltext = urllib2.urlopen("http://www.exploit-db.com/search/?action=search&filter_description="+cmstype+"&filter_exploit_text="+plugin).read()
             regex = '/download/(.+?)">'
             pattern =  re.compile(regex)
             ExploitID = re.findall(pattern,htmltext)
             print plugin
             for Eid in ExploitID:
-                print "\t[*] Vulnerable Plugin: http://www.exploit-db.com/"+Eid
+                print "\t[*] Vulnerable Plugin: http://www.exploit-db.com/exploits/"+Eid
                 
 
     
@@ -414,11 +460,10 @@ class ThreadScanner(threading.Thread):
             req = urllib2.Request(self.url+self.cmstype+plugin)
             try:
                 urllib2.urlopen(req)
-                print plugin
-                pluginsFound.append(plugin)
+                print plugin; pluginsFound.append(plugin)
             except urllib2.HTTPError, e:
                 #print e.code
-                pass
+                if e.code != 404: print plugin; pluginsFound.append(plugin)
             self.q.task_done()
 
 
@@ -506,16 +551,12 @@ if __name__ == "__main__":
         #initializer.GetJoomlaPluginsExploitDB()
         #initializer.GetWordpressPluginsExploitDB()
         #initializer.GetDrupalPlugins()
-        
-        #initializer.ExploitDBSearch("Joomla")
-        #initializer.ExploitDBSearch("Wordpress","wp_plugins.txt")
-        #initializer.ExploitDBSearch("Drupal","drupal_plugins.txt")
-        
 
     start = time.time()
     print "Start: ", start
     #scanner = CMStype(url)
     #scanner.FindCMS()
+    
     scanner = Scanner(url).FindCMSType()
     end = time.time()
     print "End: ", end
