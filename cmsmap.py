@@ -2,7 +2,6 @@
 
 import smtplib, base64, os, sys, getopt, urllib2, urllib, re, socket, time, itertools, urlparse, threading, Queue, multiprocessing
 
-version=0.1
   
 class Initialize:
     # Save Wordpress, Joomla and Drupal plugins in a local file
@@ -136,20 +135,24 @@ class Initialize:
 
 
 
-class CMStype:
+class Scanner:
     # Detect type of CMS -> Maybe add it to the main after Initialiazer 
     def __init__(self,url):
-        self.url = url
         self.agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
         self.headers={'User-Agent':self.agent,}
+        self.url = url 
+
+    def FindCMSType(self):
         htmltext = urllib2.urlopen(self.url).read()
         m = re.search("Wordpress", htmltext)
         if m: print "[*] CMS Detection: Wordpress"; wordpress = WPScan(self.url)
+            
         m = re.search("Joomla", htmltext)
         if m: print "[*] CMS Detection: Joomla"; joomla = JooScan(self.url)
-        m = re.search("Drupal", htmltext)
+            
+        m = re.search("Drupal", htmltext);
         if m: print "[*] CMS Detection: Drupal"; drupal = DruScan(self.url)
-       
+            
 
 class WPScan:
     # Scan WordPress site
@@ -157,6 +160,7 @@ class WPScan:
         self.url = url
         self.queue_num = 5
         self.thread_num = 10
+        self.cmstype = "/wp-content/plugins/"
         self.plugins = [line.strip() for line in open('wp_plugins.txt')]
         
         WPScan.WPVersion(self)
@@ -164,9 +168,7 @@ class WPScan:
         WPScan.WPplugins(self)
         ExploitDBSearch(self.url, pluginsFound)
         WPScan.WPDefaultFiles(self)
-       
-        
-        
+               
     def WPVersion(self):
         try:
             htmltext = urllib2.urlopen(self.url+'/readme.html').read()
@@ -177,6 +179,7 @@ class WPScan:
         except urllib2.HTTPError, e:
             print e.code
             pass
+        
     def WPConfigFiles(self):
         confFiles=['/wp-config.php.txt','/wp-config.old','/wp-config.php~','/wp-config.txt','/wp-config']
         for file in confFiles:
@@ -217,14 +220,14 @@ class WPScan:
             
         # Check for default files in plugins directory such as README.txt, readme.txt, licences.txt, changelog.txt
 
-    def  WPplugins(self):
+    def WPplugins(self):
         print "[*] Searching Wordpress plugins ..."
         # Create Code
         q = Queue.Queue(self.queue_num)
         
         # Spawn all threads into code
         for u in range(self.thread_num):
-            t = Scanner(url,q)
+            t = ThreadScanner(self.url,self.cmstype,q)
             t.daemon = True
             t.start()
         
@@ -394,21 +397,21 @@ class ExploitDBSearch:
                 
 
     
-class Scanner(threading.Thread):
+class ThreadScanner(threading.Thread):
     # Multi-threading Scan Class (just for Wordpress for now) 
-    def __init__(self,url,q):
+    def __init__(self,url,cmstype,q):
         threading.Thread.__init__ (self)
         self.url = url
         self.q = q
+        self.cmstype = cmstype
         self.agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
         self.headers={'User-Agent':self.agent,}
         
-
     def run(self):
         while True:
             # Get plugin from plugin queue
             plugin = self.q.get()
-            req = urllib2.Request(self.url+'/wp-content/plugins/'+plugin)
+            req = urllib2.Request(self.url+self.cmstype+plugin)
             try:
                 urllib2.urlopen(req)
                 print plugin
@@ -417,6 +420,7 @@ class Scanner(threading.Thread):
                 #print e.code
                 pass
             self.q.task_done()
+
 
     def GetPlugins(self):
         #=== No thread Method =============
@@ -448,7 +452,7 @@ class JobQue:
 # Global Variables 
 
 pluginsFound = []
-
+version=0.1
 
 # Global Methos
 
@@ -510,8 +514,9 @@ if __name__ == "__main__":
 
     start = time.time()
     print "Start: ", start
-    print pluginsFound
-    finder = CMStype(url)
+    #scanner = CMStype(url)
+    #scanner.FindCMS()
+    scanner = Scanner(url).FindCMSType()
     end = time.time()
     print "End: ", end
     print end - start, "seconds"
