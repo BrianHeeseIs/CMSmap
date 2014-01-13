@@ -837,7 +837,7 @@ if __name__ == "__main__":
     #BruteForcer(url).FindCMSType()
     #BruteForcer(url,'/administrator/index.php',['admin1','admin2','admin3fd'],['dfafs','dfasfdas','dfadf','dfasfsd','fddeed','adfasss','test']).Joorun()
     #BruteForcer(url,'/?q=user/login',['admin1','admin2','admdfasin','admin3fd'],['dfafs','dfasfdas','dfadf','adfasa']).Drurun()
-    
+    #TestCommit
     
     #PostExploit(url).WPShell()
     end = time.time()
