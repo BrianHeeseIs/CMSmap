@@ -53,6 +53,7 @@ com_awd_song
 com_awdwall
 com_awiki
 com_b2portfolio
+com_banners
 com_bca-rss-syndicator
 com_beamospetition
 com_bearleague
@@ -167,6 +168,7 @@ com_facileforms
 com_family
 com_fantasytournament
 com_filiale
+com_finder
 com_fireboard
 com_flash
 com_flashgames
@@ -481,6 +483,7 @@ com_sbsfile
 com_school
 com_schools
 com_science
+com_search
 com_searchlog
 com_sebercart
 com_sectionex
@@ -513,6 +516,7 @@ com_staticxt
 com_surveymanager
 com_svmap
 com_sweetykeeper
+com_tags
 com_tariff
 com_teacher
 com_tech_article
@@ -550,12 +554,14 @@ com_wallpapers
 com_waticketsystem
 com_webeecomment
 com_weberpcustomer
+com_weblinks
 com_webtv
 com_wgpicasa
 com_wisroyq
 com_wmi
 com_wmtpic
 com_worldrates
+com_wrapper
 com_xevidmegahd
 com_xewebtv
 com_xfaq

@@ -292,6 +292,7 @@ afw
 agenda
 aggregation
 aggregation_block
+aggregator
 aggregator_promote
 aggregator_summary
 agls
@@ -834,6 +835,7 @@ blinky_messages
 blipfm
 blitz
 blob
+block
 block2field
 block_access
 block_api
@@ -922,6 +924,7 @@ bmtabs
 body_revision
 bodybuilder
 bones
+book
 book_access
 book_bridge
 book_copy
@@ -1485,6 +1488,7 @@ collections
 collectiveaccess
 collectiveaccess_feeds
 colophon
+color
 color_field
 color_save_custom
 color_scheme
@@ -1509,6 +1513,7 @@ comicdrop
 comicview
 command
 command_buttons
+comment
 comment_abuse
 comment_acl
 comment_allow_anonymous
@@ -2414,6 +2419,7 @@ dbfm
 dbfmgreybox
 dbfmsearch
 dblclick
+dblog
 dblog_clear
 dblogin
 dblogsave
@@ -3537,6 +3543,7 @@ field_taxonomy
 field_timetable
 field_tools
 field_tooltips
+field_ui
 field_ui_permissions
 field_validation
 field_validation_deprecated
@@ -3564,6 +3571,7 @@ fieldthief
 fieldtool
 fieldx
 fierce_sso
+file
 file_access
 file_access_by_node_type
 file_admin
@@ -3642,6 +3650,7 @@ fileview
 fileviewer
 fill_roles
 fillpdf
+filter
 filter_default
 filter_harmonizer
 filter_html_image_secure
@@ -3842,6 +3851,7 @@ formtips
 formtweak
 fortissimmo
 fortune
+forum
 forum2
 forum_access
 forumautodelete
@@ -4258,6 +4268,7 @@ heartbeat_token
 helios
 hellobar
 hellotxt
+help
 help_popup
 help_soc
 helper
@@ -5217,6 +5228,7 @@ loader
 loadtest
 local_menu
 local_tasks_blocks
+locale
 locale_auto_import
 locale_cache
 locale_context
@@ -6009,6 +6021,7 @@ no_term_pages
 no_trimmed_preview
 nocase
 nocurrent_pass
+node
 node2node
 node_access
 node_access_book
@@ -6663,6 +6676,7 @@ outline
 outline_designer
 outline_dmenu
 outline_print
+overlay
 overlay_gallery
 overlay_paths
 overlay_theme
@@ -6819,6 +6833,7 @@ pasteformat
 patch_content_multigroup
 patch_manager
 patchdoq
+path
 path_access
 path_alias_xt
 path_blacklist
@@ -7073,6 +7088,7 @@ pngfix
 po_re_importer
 podtrac
 point_board
+poll
 poll_blocks
 poll_extras
 pollanon
@@ -7195,6 +7211,7 @@ procon
 prod_check
 product_reference_view
 production
+profile
 profile2
 profile2_apachesolr
 profile2_privacy
@@ -7904,6 +7921,7 @@ scrollshow
 scrolltext
 scssphp
 sdbo
+search
 search404
 search_all
 search_and_replace
@@ -8567,6 +8585,7 @@ static_404
 static_field
 staticmap
 station
+statistics
 statistics_advanced
 statistics_ajax
 statistics_blocks
@@ -8728,9 +8747,11 @@ syntaxhighlighter
 syntaxhighlighter_insert
 syntaxhighlighter_to_pre
 synth_products
+syslog
 syslog_advanced
 syslog_ng
 syslog_viewer
+system
 system_email
 system_features
 system_perm
@@ -8800,6 +8821,7 @@ taxiselect
 taxman
 taxomenu
 taxonews
+taxonomy
 taxonomySearch
 taxonomy_access
 taxonomy_access_fix
@@ -9168,6 +9190,7 @@ track
 track_field_changes
 track_host
 trackback
+tracker
 tracker2
 trackerlite
 trackfield
@@ -9195,6 +9218,7 @@ translatableregions
 translate_this
 translated_parent
 translateterms
+translation
 translation404
 translation_enabler
 translation_framework
@@ -9227,6 +9251,7 @@ trevi
 tribune
 trick_question
 trigeo
+trigger
 triggerunlock
 trimmed_plaintext
 trip_search
@@ -9779,6 +9804,7 @@ unwrap
 up_roles
 upapi
 upcfield
+update
 update_advanced
 update_api
 update_custom_settings
@@ -9839,6 +9865,7 @@ urlproxy
 urs
 uscongress
 used_modules
+user
 user_access
 user_access_keys
 user_activated
