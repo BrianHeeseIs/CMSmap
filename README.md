@@ -2,10 +2,10 @@ CMSmap
 ======
 
 CMSmap is a python open source CMS (Content Management System) scanner that automates the process 
-of detecting security flaws of the most popular CMSs. The idea was to integrate common vulnerabilities 
+of detecting security flaws of the most popular CMSs. The main purpose of CMSmap is to integrate common vulnerabilities 
 for different types of CMSs in a single tool. 
 
-At the moment, the CMSs supported by CMSmap are WordPress, Joomla and Drupal.
+At the moment, CMSs supported by CMSmap are WordPress, Joomla and Drupal.
 
 Please note that this project is an early state. As a such, you might find bugs, flaws or mulfunctions.
 Use at your own risk!
@@ -23,7 +23,7 @@ Usage
 			-h, --help
 	
 	Example: cmsmap.py -u https://example.com
-			cmsmap.py -u https://example.com -U admin -P passwords.txt
+			 cmsmap.py -u https://example.com -U admin -P passwords.txt
 
 
 Disclaimer
