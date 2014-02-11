@@ -69,6 +69,7 @@ drupal_plugins.txt
 multipart
 termicolor
 
++ Readme
 + Disclaimer
 + License
 + Changelog
