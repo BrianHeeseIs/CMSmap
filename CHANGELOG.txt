@@ -1,0 +1,74 @@
++ Initialize Phase:
+Get Wordpress Plugins via Wordpress site and ExploitDB
+Get Joomla Plugins via ExploitDB
+Get Drupal Plugins via Drupal site
+
++ CMS Type Detection
+
++ Wordpress Scan:
+Version Detection
+Theme Detection
+Plugins Enumeration
+Config Files Detection
+Default Files Detection
+Username Enumeration Via Feed 
+Username Enumeration Via Author 
+Username Enumeration Via Forgotten Password
+Low Intensive Brute Forcing (5 attempts)
+Path Disclosure Via Hello plugin
+Directories Listing
+ExploitDB Searching of Plugins
+ExploitDB Searching of Themes
+
++ Joomla Scan:
+Version Detection
+Template Detection
+Config Files Detection
+Default Files Detection
+Username Enumeration Via Feed
+Low Intensive Brute Forcing (5 attempts)
+Components Enumeration
+ExploitDB Searching of Components
+Directories Listing
+
++ Drupal Scan:
+Version Detection
+Theme Detection
+Config Files Detection
+Default Files Detection
+Username Enumeration via Views Module
+Username Enumeration via Blog Module
+Username Enumeration via Forgotten Password
+Low Intensive Brute Forcing (5 attempts)
+Modules Enumeration
+ExploitDB Searching of Modules
+Directories Listing
+
++ Wordpress Brute Forcing Attack
++ Joomla Brute Forcing Attack
++ Drupal Brute Forcing Attack
+
++ Generic Checks
+Directory Listing
+HTTPS Check
+Autocomplete Off Check
+Robots.txt Check
+
++ Post Exploit
+Wordpress Shell via Plugin
+Joomla Shell
+
++ Files
+wp_plugins.txt
+wp_themes.txt
+wp-shell.zip
+joomla_plugins.txt
+drupal_plugins.txt
+
++ ThirdParty
+multipart
+termicolor
+
++ Disclaimer
++ License
++ Changelog
