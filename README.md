@@ -8,7 +8,7 @@ for different types of CMSs in a single tool.
 At the moment, CMSs supported by CMSmap are WordPress, Joomla and Drupal.
 
 Please note that this project is an early state. As a such, you might find bugs, flaws or mulfunctions.
-Use at your own risk!
+Use it at your own risk!
 
 Usage
 =====
