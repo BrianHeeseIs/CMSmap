@@ -150,7 +150,7 @@ class Scanner:
             m = re.search("Drupal", htmltext,re.IGNORECASE);
             if m: print "[*] CMS Detection: Drupal"; drupal = DruScan(self.url,self.threads).Drurun()
         except urllib2.URLError, e:
-            print "[!] Website Unreachable: "+self.url
+            print_red("[!] Website Unreachable: "+self.url)
             sys.exit()          
 
 class WPScan:
@@ -166,7 +166,7 @@ class WPScan:
         self.feed = "/?feed=rss2"
         self.author = "/?author="
         self.forgottenPsw = "/wp-login.php?action=lostpassword"
-        self.weakpsw = ['password', 'adminpass','123456','abc123','qwerty']
+        self.weakpsw = ['password', 'admin','123456','abc123','qwerty']
         self.usernames = []
         self.theme = None
         self.confFiles=['','.php~','.php.txt','.php.old','.php_old','.php-old','.php.save','.php.swp','.php.swo','.php_bak','.php-bak','.php.original','.php.old','.php.orig','.php.bak','.save','.old','.bak','.orig','.original','.txt']
@@ -878,7 +878,7 @@ class PostExploit:
             htmltext = opener.open(self.url+self.wpupload, self.params).read()
             if re.search("Plugin installed successfully",htmltext):
                 print_red("[!] CMSmap WordPress Shell Plugin Installed")
-                print_red("[!] Web Shell: "+self.url+"/wp-content/plugins/wp-shell/shell.php")
+                print_red_bold("[!] Web Shell: "+self.url+"/wp-content/plugins/wp-shell/shell.php")
                 print_yellow("[-] Remember to delete CMSmap WordPress Shell Plugin")
         
         except urllib2.HTTPError, e:
@@ -1059,10 +1059,14 @@ themesFound = []
 version=0.3
 verbose = False
 threads = 5
-print_red = lambda x: cprint(x, 'red', attrs=['bold'], file=sys.stderr)
-print_grey = lambda x: cprint(x, 'grey', attrs=['bold'], file=sys.stderr)
-print_green = lambda x: cprint(x, 'green', attrs=['bold'], file=sys.stderr)
-print_yellow = lambda x: cprint(x, 'yellow', attrs=['bold'], file=sys.stderr)
+print_red = lambda x: cprint(x, 'red', None, file=sys.stderr)
+print_red_bold = lambda x: cprint(x, 'red', attrs=['bold'], file=sys.stderr)
+print_grey = lambda x: cprint(x, 'grey', None, file=sys.stderr)
+print_grey_bold = lambda x: cprint(x, 'grey', attrs=['bold'], file=sys.stderr)
+print_green = lambda x: cprint(x, 'green', None, file=sys.stderr)
+print_green_bold = lambda x: cprint(x, 'green', attrs=['bold'], file=sys.stderr)
+print_yellow = lambda x: cprint(x, 'yellow', None, file=sys.stderr)
+print_yellow_bold = lambda x: cprint(x, 'yellow', attrs=['bold'], file=sys.stderr)
 
 # Global Methos =================================================================================================
 
@@ -1113,7 +1117,7 @@ if __name__ == "__main__":
                 pswlist = a
             elif o in ("-t", "--threads"):
                 threads = int(a)
-                print "[-] Threads Set : "+str(threads)
+                print_grey("[-] Threads Set : "+str(threads))
             elif o == "-v":
                 verbose = True
             else:
