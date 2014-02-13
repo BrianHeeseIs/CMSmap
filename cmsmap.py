@@ -1119,7 +1119,7 @@ if __name__ == "__main__":
                 pswlist = a
             elif o in ("-t", "--threads"):
                 threads = int(a)
-                print_grey("[-] Threads Set : "+str(threads))
+                print_blue("[-] Threads Set : "+str(threads))
             elif o == "-v":
                 verbose = True
             else:
@@ -1130,7 +1130,7 @@ if __name__ == "__main__":
         sys.exit()
         
     start = time.time()
-    print_blue("[-] Date & Time: ", time.strftime('%d/%m/%Y %H:%M:%S'))
+    print_blue("[-] Date & Time: "+ time.strftime('%d/%m/%Y %H:%M:%S'))
     
     # if plugins don't exist (first time of running) then initialize
     if not os.path.exists('wp_plugins.txt' or 'joomla_plugins.txt' or 'drupal_plugins.txt'):
@@ -1147,5 +1147,5 @@ if __name__ == "__main__":
     
     end = time.time()
     diffTime = end - start
-    print_blue("[-] Date & Time: ", time.strftime('%d/%m/%Y %H:%M:%S'))
+    print_blue("[-] Date & Time: "+time.strftime('%d/%m/%Y %H:%M:%S'))
     print "[-] Scan Completed in: "+str(datetime.timedelta(seconds=diffTime)).split(".")[0]
