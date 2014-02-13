@@ -1148,4 +1148,4 @@ if __name__ == "__main__":
     end = time.time()
     diffTime = end - start
     print_blue("[-] Date & Time: "+time.strftime('%d/%m/%Y %H:%M:%S'))
-    print "[-] Scan Completed in: "+str(datetime.timedelta(seconds=diffTime)).split(".")[0]
+    print_blue("[-] Scan Completed in: "+str(datetime.timedelta(seconds=diffTime)).split(".")[0])
