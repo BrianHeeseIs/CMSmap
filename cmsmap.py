@@ -1119,7 +1119,7 @@ if __name__ == "__main__":
                 pswlist = a
             elif o in ("-t", "--threads"):
                 threads = int(a)
-                print_blue("[-] Threads Set : "+str(threads))
+                print "[-] Threads Set : "+str(threads)
             elif o == "-v":
                 verbose = True
             else:
