@@ -251,7 +251,7 @@ class WPScan:
             req = urllib2.Request(self.url+file,None,self.headers)
             try:
                 urllib2.urlopen(req)
-                print print_green("[*] Info Disclosure: " +self.url+file)
+                print "[*] Info Disclosure: " +self.url+file
             except urllib2.HTTPError, e:
                 #print e.code
                 pass
@@ -1023,7 +1023,7 @@ class GenericChecks:
             req = urllib2.Request(self.url+self.relPath,None,self.headers)
             htmltext = urllib2.urlopen(req).read()
             dirList = re.search("<title>Index of", htmltext,re.IGNORECASE)
-            if dirList: print_blue("[*] Directory Listing Enabled: "+self.url+self.relPath)
+            if dirList: print_green("[*] Directory Listing Enabled: "+self.url+self.relPath)
         except urllib2.HTTPError, e:
             pass
         
