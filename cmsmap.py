@@ -688,7 +688,7 @@ class ExploitDBSearch:
             ExploitID = re.findall(pattern,htmltext)
             print plugin
             for Eid in ExploitID:
-                print_yellow( "\t[*] Vulnerable Plugin Found: http://www.exploit-db.com/exploits/"+Eid)
+                print_yellow("\t[*] Vulnerable Plugin Found: http://www.exploit-db.com/exploits/"+Eid)
 
     def Themes(self):
         print "[-] Searching Vulnerable Theme from ExploitDB website ..."
@@ -698,7 +698,7 @@ class ExploitDBSearch:
             pattern =  re.compile(regex)
             ExploitID = re.findall(pattern,htmltext)
             for Eid in ExploitID:
-                print "\t[*] Vulnerable Theme Found: http://www.exploit-db.com/exploits/"+Eid
+                print_yellow("\t[*] Vulnerable Theme Found: http://www.exploit-db.com/exploits/"+Eid)
 
 class NoRedirects(urllib2.HTTPRedirectHandler):
     """Redirect handler that simply raises a Redirect()."""
@@ -728,7 +728,7 @@ class ThreadScanner(threading.Thread):
                 noRedirOpener.open(req); print plugin; self.pluginsFound.append(plugin)
             except urllib2.HTTPError, e:
                 # print e.code
-                if e.code == 403 or e.code == 500 : print_yellow(plugin); self.pluginsFound.append(plugin)
+                if e.code == 403 or e.code == 500 : print plugin; self.pluginsFound.append(plugin)
             except urllib2.URLError, e:
                 print "[!] Thread Error: If this error persists, reduce number of threads"
                 if verbose : print e.reason
@@ -1130,7 +1130,7 @@ if __name__ == "__main__":
         sys.exit()
         
     start = time.time()
-    print "[-] Date & Time: ", time.strftime('%d/%m/%Y %H:%M:%S')
+    print_blue("[-] Date & Time: ", time.strftime('%d/%m/%Y %H:%M:%S'))
     
     # if plugins don't exist (first time of running) then initialize
     if not os.path.exists('wp_plugins.txt' or 'joomla_plugins.txt' or 'drupal_plugins.txt'):
@@ -1147,5 +1147,5 @@ if __name__ == "__main__":
     
     end = time.time()
     diffTime = end - start
-    print "[-] Date & Time: ", time.strftime('%d/%m/%Y %H:%M:%S')
-    print "[-] Scan Completed in : "+str(datetime.timedelta(seconds=diffTime)).split(".")[0]
+    print_blue("[-] Date & Time: ", time.strftime('%d/%m/%Y %H:%M:%S'))
+    print "[-] Scan Completed in: "+str(datetime.timedelta(seconds=diffTime)).split(".")[0]
