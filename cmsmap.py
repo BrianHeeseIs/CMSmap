@@ -225,7 +225,7 @@ class WPScan:
             req = urllib2.Request(self.url+"/wp-config"+file,None,self.headers)
             try:
                 urllib2.urlopen(req)
-                print "[*] Configuration File Found: " +self.url+"/wp-config"+file
+                print_red("[!] Configuration File Found: " +self.url+"/wp-config"+file)
             except urllib2.HTTPError, e:
                 pass
 
@@ -257,17 +257,17 @@ class WPScan:
                 pass
             
     def WPFeed(self):
+        print "[*] Enumerating Wordpress Usernames via \"Feed\" ..."
         try:
             req = urllib2.Request(self.url+self.feed,None,self.headers)
             htmltext = urllib2.urlopen(req).read()
             wpUsers = re.findall("<dc:creator><!\[CDATA\[(.+?)\]\]></dc:creator>", htmltext,re.IGNORECASE)
             wpUsers2 = re.findall("<dc:creator>(.+?)</dc:creator>", htmltext,re.IGNORECASE)
             if wpUsers :
-                print "[*] Enumerating Wordpress Usernames via \"Feed\" ..."
                 self.usernames = wpUsers + self.usernames
                 self.usernames = sorted(set(self.usernames))
             for user in self.usernames:
-                print user
+                print_yellow(user)
         except urllib2.HTTPError, e:
             #print e.code
             pass
@@ -287,7 +287,7 @@ class WPScan:
                 pass
         self.usernames = sorted(set(self.usernames))
         for user in self.usernames:
-            print user
+            print_yellow(user)
         
     def WPForgottenPassword(self):
         # Username Enumeration via Forgotten Password
@@ -579,7 +579,7 @@ class DruScan:
             req = urllib2.Request(self.url+file)
             try:
                 urllib2.urlopen(req)
-                print "[*] Info Disclosure: " +self.url+file
+                print_grey("[*] Info Disclosure: " +self.url+file)
             except urllib2.HTTPError, e:
                 #print e.code
                 pass
@@ -728,7 +728,7 @@ class ThreadScanner(threading.Thread):
                 noRedirOpener.open(req); print plugin; self.pluginsFound.append(plugin)
             except urllib2.HTTPError, e:
                 # print e.code
-                if e.code == 403 or e.code == 500 : print plugin; self.pluginsFound.append(plugin)
+                if e.code == 403 or e.code == 500 : print_yellow(plugin); self.pluginsFound.append(plugin)
             except urllib2.URLError, e:
                 print "[!] Thread Error: If this error persists, reduce number of threads"
                 if verbose : print e.reason
@@ -791,7 +791,7 @@ class BruteForcer:
                             print "[!] Account Lockout Enabled: Your IP address has been temporary blocked. Try it later or from a different IP address"
                             return
                         elif re.search('dashboard',htmltext,re.IGNORECASE):
-                            print "[*] Valid Credentials: "+user+" "+pwd
+                            print_red("[*] Valid Credentials: "+user+" "+pwd)
                             self.WPValidCredentials.append([user,pwd])                       
                     except urllib2.HTTPError, e:
                         #print e.code
