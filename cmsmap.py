@@ -251,7 +251,7 @@ class WPScan:
             req = urllib2.Request(self.url+file,None,self.headers)
             try:
                 urllib2.urlopen(req)
-                print "[*] Info Disclosure: " +self.url+file
+                print print_green("[*] Info Disclosure: " +self.url+file)
             except urllib2.HTTPError, e:
                 #print e.code
                 pass
@@ -267,7 +267,7 @@ class WPScan:
                 self.usernames = wpUsers + self.usernames
                 self.usernames = sorted(set(self.usernames))
             for user in self.usernames:
-                print_yellow(user)
+                print user
         except urllib2.HTTPError, e:
             #print e.code
             pass
@@ -287,7 +287,7 @@ class WPScan:
                 pass
         self.usernames = sorted(set(self.usernames))
         for user in self.usernames:
-            print_yellow(user)
+            print user
         
     def WPForgottenPassword(self):
         # Username Enumeration via Forgotten Password
@@ -796,7 +796,7 @@ class BruteForcer:
                     except urllib2.HTTPError, e:
                         #print e.code
                         pass
-                if userFound: print "[*] Username found: "+user
+                if userFound: print_yellow("[*] Username found: "+user)
             for WPCredential in self.WPValidCredentials :
                 PostExploit(self.url).WPShell(WPCredential[0], WPCredential[1])
            
@@ -1023,7 +1023,7 @@ class GenericChecks:
             req = urllib2.Request(self.url+self.relPath,None,self.headers)
             htmltext = urllib2.urlopen(req).read()
             dirList = re.search("<title>Index of", htmltext,re.IGNORECASE)
-            if dirList: print "[*] Directory Listing Enabled: "+self.url+self.relPath
+            if dirList: print_blue("[*] Directory Listing Enabled: "+self.url+self.relPath)
         except urllib2.HTTPError, e:
             pass
         
@@ -1067,6 +1067,8 @@ print_green = lambda x: cprint(x, 'green', None, file=sys.stderr)
 print_green_bold = lambda x: cprint(x, 'green', attrs=['bold'], file=sys.stderr)
 print_yellow = lambda x: cprint(x, 'yellow', None, file=sys.stderr)
 print_yellow_bold = lambda x: cprint(x, 'yellow', attrs=['bold'], file=sys.stderr)
+print_blue = lambda x: cprint(x, 'blue', None, file=sys.stderr)
+print_blue_bold = lambda x: cprint(x, 'blue', attrs=['bold'], file=sys.stderr)
 
 # Global Methos =================================================================================================
 
