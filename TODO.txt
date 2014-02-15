@@ -1,0 +1,2 @@
++ Force plugin Update after a certain amount of time
++ Check for writable templates
