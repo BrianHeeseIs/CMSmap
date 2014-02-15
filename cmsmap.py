@@ -1132,13 +1132,13 @@ def WriteTextFile(fn,s):
     
 def usage(version):
     print "CMSmap tool v"+str(version)+" - Simple CMS Scanner\nAuthor: Mike Manzotti mike.manzotti@dionach.com\nUsage: " + os.path.basename(sys.argv[0]) + """ -u <URL>
-          -t, --target      target URL (e.g. 'https://abc.test.com:8080/')
-          -v, --verbose  verbose mode (Default: false)
-          -T, --threads  number of threads (Default: 5)
-          -u, --usr      username or file 
-          -p, --psw      password or file
-          -U, --update   update CMSmap to the latest version
-          -h, --help 
+          -t, --target    target URL (e.g. 'https://abc.test.com:8080/')
+          -v, --verbose   verbose mode (Default: false)
+          -T, --threads   number of threads (Default: 5)
+          -u, --usr       username or file 
+          -p, --psw       password or file
+          -U, --update    update CMSmap to the latest version
+          -h, --help      show this help
           """
     print "Example: "+ os.path.basename(sys.argv[0]) +" -u https://example.com"
     print "         "+ os.path.basename(sys.argv[0]) +" -u https://example.com -u admin -p passwords.txt"
