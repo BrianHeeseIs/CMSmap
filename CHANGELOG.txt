@@ -56,7 +56,7 @@ Robots.txt Check
 
 + Post Exploit
 Wordpress Shell via Plugin
-Joomla Shell
+Joomla Shell via Component
 
 + Files
 wp_plugins.txt
