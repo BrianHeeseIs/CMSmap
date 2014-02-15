@@ -18,7 +18,7 @@ class Initialize:
             print_yellow("[!] Example: git clone https://github.com/m7x/cmsmap")
         else:
             print "[*] Updating CMSmap to the latest version from GitHub repository... "
-            process = os.system("git pull zzz")
+            process = os.system("git pull")
             if process == 0 : success = True
         if success :
             print "[*] CMSmap is now updated to the latest version"
