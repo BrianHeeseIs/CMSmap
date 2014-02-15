@@ -594,7 +594,7 @@ class DruScan:
             req = urllib2.Request(self.url+file)
             try:
                 urllib2.urlopen(req)
-                print_grey("[*] Info Disclosure: " +self.url+file)
+                print "[*] Info Disclosure: " +self.url+file
             except urllib2.HTTPError, e:
                 #print e.code
                 pass
