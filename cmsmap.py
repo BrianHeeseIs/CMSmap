@@ -1199,6 +1199,7 @@ if __name__ == "__main__":
         
     if CMSmapUpdate :
         initializer = Initialize()
+        initializer.CMSmapUpdate()
     elif BruteForcingAttack :
         BruteForcer(url,usrlist,pswlist).FindCMSType()
     else :
