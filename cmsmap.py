@@ -13,7 +13,7 @@ class Initialize:
         
     def CMSmapUpdate(self):
         success = False
-        if not os.path.exists(os.path.join(rootDir, ".git")):
+        if not os.path.exists(".git"):
             print_yellow("[!] Git Repository Not Found. Please download the latest version of CMSmap from GitHub repository")
             print_yellow("[!] Example: git clone https://github.com/m7x/cmsmap")
         else:
