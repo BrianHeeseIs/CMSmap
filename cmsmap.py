@@ -1177,7 +1177,7 @@ if __name__ == "__main__":
                 print "[-] Threads Set : "+str(threads)
             elif o in("-v", "--verbose"):
                 verbose = True
-            elif o in("-U", "--Update"):
+            elif o in("-U", "--update"):
                 CMSmapUpdate = True
             else:
                 usage(version)
