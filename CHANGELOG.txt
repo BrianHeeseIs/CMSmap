@@ -2,6 +2,7 @@
 Get Wordpress Plugins via Wordpress site and ExploitDB
 Get Joomla Plugins via ExploitDB
 Get Drupal Plugins via Drupal site
+CMSmap update
 
 + CMS Type Detection
 

@@ -15,15 +15,16 @@ Usage
 	CMSmap tool v0.3 - Simple CMS Scanner
 	Author: Mike Manzotti mike.manzotti@dionach.com
 	Usage: cmsmap.py -u <URL>
-			-u, --url      target URL (e.g. 'https://abc.test.com:8080/')
-			-v, --verbose  verbose mode (Default: false)
-			-t, --threads  number of threads (Default: 5)
-			-U, --usr      username or file
-			-P, --psw      password or file
-			-h, --help
-	
+	          -t, --target      target URL (e.g. 'https://abc.test.com:8080/')
+	          -v, --verbose  verbose mode (Default: false)
+	          -T, --threads  number of threads (Default: 5)
+	          -u, --usr      username or file 
+	          -p, --psw      password or file
+	          -U, --update   update CMSmap to the latest version
+	          -h, --help 
+	          
 	Example: cmsmap.py -u https://example.com
-			 cmsmap.py -u https://example.com -U admin -P passwords.txt
+	         cmsmap.py -u https://example.com -u admin -p passwords.txt
 
 
 Disclaimer

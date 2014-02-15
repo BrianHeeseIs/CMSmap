@@ -10,6 +10,21 @@ class Initialize:
     def __init__(self):
         self.agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
         self.headers={'User-Agent':self.agent,}
+        
+    def CMSmapUpdate(self):
+        success = False
+        if not os.path.exists(os.path.join(rootDir, ".git")):
+            print_yellow("[!] Git Repository Not Found. Please download the latest version of CMSmap from GitHub repository")
+            print_yellow("[!] Example: git clone https://github.com/m7x/cmsmap")
+        else:
+            print "[*] Updating CMSmap to the latest version from GitHub repository... "
+            process = os.system("git pull")
+            print process
+        if success :
+            print_yellow("[*] CMSmap is now updated to the latest version")
+        else :
+            print_yellow("[!] Updated could not be completed. Please download the latest version of CMSmap from GitHub repository")
+            print_yellow("[!] Example: git clone https://github.com/m7x/cmsmap")
     
     def GetWordPressPlugins(self):
         # Download Wordpress Plugins from Wordpress SVN website and popular Wordpress plugins page
@@ -1094,6 +1109,8 @@ pluginsFound = []
 themesFound = []
 version=0.3
 verbose = False
+CMSmapUpdate = False
+BruteForcingAttack = False
 threads = 5
 print_red = lambda x: cprint(x, 'red', None, file=sys.stderr)
 print_red_bold = lambda x: cprint(x, 'red', attrs=['bold'], file=sys.stderr)
@@ -1115,21 +1132,22 @@ def WriteTextFile(fn,s):
     
 def usage(version):
     print "CMSmap tool v"+str(version)+" - Simple CMS Scanner\nAuthor: Mike Manzotti mike.manzotti@dionach.com\nUsage: " + os.path.basename(sys.argv[0]) + """ -u <URL>
-          -u, --url      target URL (e.g. 'https://abc.test.com:8080/')
+          -t, --target      target URL (e.g. 'https://abc.test.com:8080/')
           -v, --verbose  verbose mode (Default: false)
-          -t, --threads  number of threads (Default: 5)
-          -U, --usr      username or file 
-          -P, --psw      password or file 
+          -T, --threads  number of threads (Default: 5)
+          -u, --usr      username or file 
+          -p, --psw      password or file
+          -U, --update   update CMSmap to the latest version
           -h, --help 
           """
     print "Example: "+ os.path.basename(sys.argv[0]) +" -u https://example.com"
-    print "         "+ os.path.basename(sys.argv[0]) +" -u https://example.com -U admin -P passwords.txt"
+    print "         "+ os.path.basename(sys.argv[0]) +" -u https://example.com -u admin -p passwords.txt"
     
 if __name__ == "__main__":
     # command line arguments
     if sys.argv[1:]:
         try:
-            optlist, args = getopt.getopt(sys.argv[1:], 'u:U:P:t:vh', ["url=", "version", "help","usr","psw","threads"])
+            optlist, args = getopt.getopt(sys.argv[1:], 't:u:p:T:vhU', ["target=", "verbose","help","usr=","psw=","threads=","update"])
         except getopt.GetoptError as err:
             # print help information and exit:
             print(err) # print something like "option -a not recognized"
@@ -1139,7 +1157,7 @@ if __name__ == "__main__":
             if o == "-h":
                 usage(version)
                 sys.exit()
-            elif o in ("-u", "--url"):
+            elif o in ("-t", "--url"):
                 url = a
                 pUrl = urlparse.urlparse(url)
                 #clean up supplied URLs
@@ -1149,15 +1167,18 @@ if __name__ == "__main__":
                 if not scheme:
                     print 'VALIDATION ERROR: http(s):// prefix required'
                     exit(1)
-            elif o in ("-U", "--usr"):
+            elif o in ("-u", "--usr"):
                 usrlist = a
-            elif o in ("-P", "--psw"):
+                BruteForcingAttack = True
+            elif o in ("-p", "--psw"):
                 pswlist = a
-            elif o in ("-t", "--threads"):
+            elif o in ("-T", "--threads"):
                 threads = int(a)
                 print "[-] Threads Set : "+str(threads)
-            elif o == "-v":
+            elif o in("-v", "--verbose"):
                 verbose = True
+            elif o in("-U", "--Update"):
+                CMSmapUpdate = True
             else:
                 usage(version)
                 sys.exit()
@@ -1175,10 +1196,12 @@ if __name__ == "__main__":
         initializer.GetJoomlaPluginsExploitDB()
         initializer.GetWordpressPluginsExploitDB()
         initializer.GetDrupalPlugins()
-    
-    try:
+        
+    if CMSmapUpdate :
+        initializer = Initialize()
+    elif BruteForcingAttack :
         BruteForcer(url,usrlist,pswlist).FindCMSType()
-    except NameError:
+    else :
         Scanner(url,threads).FindCMSType()
     
     end = time.time()
