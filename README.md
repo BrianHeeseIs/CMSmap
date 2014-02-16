@@ -14,7 +14,7 @@ Usage
 =====
 	CMSmap tool v0.3 - Simple CMS Scanner
 	Author: Mike Manzotti mike.manzotti@dionach.com
-	Usage: cmsmap.py -u <URL>
+	Usage: cmsmap.py -t <URL>
 	          -t, --target      target URL (e.g. 'https://abc.test.com:8080/')
 	          -v, --verbose  verbose mode (Default: false)
 	          -T, --threads  number of threads (Default: 5)
@@ -23,8 +23,8 @@ Usage
 	          -U, --update   update CMSmap to the latest version
 	          -h, --help 
 	          
-	Example: cmsmap.py -u https://example.com
-	         cmsmap.py -u https://example.com -u admin -p passwords.txt
+	Example: cmsmap.py -t https://example.com
+	         cmsmap.py -t https://example.com -u admin -p passwords.txt
 
 
 Disclaimer
