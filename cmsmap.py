@@ -1134,18 +1134,18 @@ def WriteTextFile(fn,s):
     f.close()
     
 def usage(version):
-    print "CMSmap tool v"+str(version)+" - Simple CMS Scanner\nAuthor: Mike Manzotti mike.manzotti@dionach.com\nUsage: " + os.path.basename(sys.argv[0]) + """ -u <URL>
+    print "CMSmap tool v"+str(version)+" - Simple CMS Scanner\nAuthor: Mike Manzotti mike.manzotti@dionach.com\nUsage: " + os.path.basename(sys.argv[0]) + """ -t <URL>
           -t, --target    target URL (e.g. 'https://abc.test.com:8080/')
           -v, --verbose   verbose mode (Default: false)
           -T, --threads   number of threads (Default: 5)
           -u, --usr       username or file 
           -p, --psw       password or file
-          -o, --out       save output in a file
+          -o, --out       save output in a file (Not implemented yet)
           -U, --update    update CMSmap to the latest version
           -h, --help      show this help
           """
-    print "Example: "+ os.path.basename(sys.argv[0]) +" -u https://example.com"
-    print "         "+ os.path.basename(sys.argv[0]) +" -u https://example.com -u admin -p passwords.txt"
+    print "Example: "+ os.path.basename(sys.argv[0]) +" -t https://example.com"
+    print "         "+ os.path.basename(sys.argv[0]) +" -t https://example.com -u admin -p passwords.txt"
     
 if __name__ == "__main__":
     # command line arguments
