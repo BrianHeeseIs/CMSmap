@@ -10,6 +10,14 @@ At the moment, CMSs supported by CMSmap are WordPress, Joomla and Drupal.
 Please note that this project is an early state. As such, you might find bugs, flaws or mulfunctions.
 Use it at your own risk!
 
+
+Installation
+=====
+You can download the latest version of CMSmap by cloning the GitHub repository:
+
+	git clone https://github.com/m7x/CMSmap.git
+
+
 Usage
 =====
 	CMSmap tool v0.3 - Simple CMS Scanner

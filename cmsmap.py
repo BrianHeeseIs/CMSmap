@@ -159,7 +159,7 @@ class Scanner:
             GenericChecks(self.url).HTTPSCheck()
             GenericChecks(self.url).RobotsTXT()
             m = re.search("Wordpress", htmltext,re.IGNORECASE)
-            if m: print "[*] CMS Detection: Wordpress"; wordpress = WPScan(self.url,self.threads).WPrun()
+            if m: msg = "[*] CMS Detection: Wordpress"; Report(fn,msg).WriteTextFile(); print msg; wordpress = WPScan(self.url,self.threads).WPrun()
             m = re.search("Joomla", htmltext,re.IGNORECASE)
             if m: print "[*] CMS Detection: Joomla"; joomla = JooScan(self.url,self.threads).Joorun()                
             m = re.search("Drupal", htmltext,re.IGNORECASE);
@@ -680,12 +680,6 @@ class DruScan:
             q.put(i)  
         q.join()
     
-class OutputReport:
-    #def TXT:
-    #def HTML:
-    #def XML:
-        pass
-    
 class ExploitDBSearch:
     def __init__(self,url,cmstype,query):
         self.url = url
@@ -1128,7 +1122,7 @@ class GenericChecks:
         pUrl = urlparse.urlparse(self.url)
         #clean up supplied URLs
         scheme = pUrl.scheme.lower()
-        if scheme == 'http' : print "[*] Website Not in HTTPS: "+self.url
+        if scheme == 'http' : msg = "[*] Website Not in HTTPS: "+self.url; Report(fn,msg).WriteTextFile(); print msg
 
     def AutocompleteOff(self,relPath):
         self.relPath = relPath
@@ -1149,8 +1143,22 @@ class GenericChecks:
             #print e.code
             pass
 
-# Global Variables =============================================================================================
+class Report:
+    def __init__(self,fn,log):
+        self.fn = fn
+        self.log += log
+        self.WriteTextFile(self.fn, self.log)
+        
+    def WriteTextFile(self):
+        f = open(fn,"w")
+        f.write(self.log)
+        f.close()
+    
+    def WriteHTMLFile(self):
+        pass
+    
 
+# Global Variables =============================================================================================
 pluginsFound = []
 themesFound = []
 version=0.3
@@ -1171,11 +1179,6 @@ print_blue_bold = lambda x: cprint(x, 'blue', attrs=['bold'], file=sys.stderr)
 
 # Global Methos =================================================================================================
 
-def WriteTextFile(fn,s):
-    f = open(fn,"w")
-    f.write(s)
-    f.close()
-    
 def usage(version):
     print "CMSmap tool v"+str(version)+" - Simple CMS Scanner\nAuthor: Mike Manzotti mike.manzotti@dionach.com\nUsage: " + os.path.basename(sys.argv[0]) + """ -t <URL>
           -t, --target    target URL (e.g. 'https://abc.test.com:8080/')
