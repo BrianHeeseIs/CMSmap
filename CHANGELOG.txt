@@ -56,8 +56,9 @@ Autocomplete Off Check
 Robots.txt Check
 
 + Post Exploit
-Wordpress Shell via Plugin
-Joomla Shell via Component
+Wordpress Web Shell via Plugin
+Joomla Web Shell via Component
+Drupal Web Shell via Module
 
 + Files
 wp_plugins.txt

