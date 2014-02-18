@@ -1,4 +1,4 @@
 + Force Update plugin lists after a certain amount of time
 + Check for writable templates
-+ Save output in a file
++ Save output in a file for Joomla and Drupal
 + Double check against CMS installation in different languages 

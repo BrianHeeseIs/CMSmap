@@ -158,12 +158,18 @@ class Scanner:
             htmltext = urllib2.urlopen(req).read()
             GenericChecks(self.url).HTTPSCheck()
             GenericChecks(self.url).RobotsTXT()
-            m = re.search("Wordpress", htmltext,re.IGNORECASE)
-            if m: msg = "[*] CMS Detection: Wordpress"; Report(fn,msg).WriteTextFile(); print msg; wordpress = WPScan(self.url,self.threads).WPrun()
-            m = re.search("Joomla", htmltext,re.IGNORECASE)
-            if m: print "[*] CMS Detection: Joomla"; joomla = JooScan(self.url,self.threads).Joorun()                
-            m = re.search("Drupal", htmltext,re.IGNORECASE);
-            if m: print "[*] CMS Detection: Drupal"; drupal = DruScan(self.url,self.threads).Drurun()
+            if re.search("Wordpress", htmltext,re.IGNORECASE):
+                msg = "[*] CMS Detection: Wordpress"; print msg
+                if output : report.WriteTextFile(msg)
+                wordpress = WPScan(self.url,self.threads).WPrun()
+            if re.search("Joomla", htmltext,re.IGNORECASE):
+                msg = "[*] CMS Detection: Joomla"; print msg
+                if output : report.WriteTextFile(msg)
+                joomla = JooScan(self.url,self.threads).Joorun()
+            if re.search("Drupal", htmltext,re.IGNORECASE):
+                msg = "[*] CMS Detection: Drupal"; print msg
+                if output : report.WriteTextFile(msg)
+                drupal = DruScan(self.url,self.threads).Drurun()
         except urllib2.URLError, e:
             print_red("[!] Website Unreachable: "+self.url)
             sys.exit()          
@@ -191,7 +197,8 @@ class WPScan:
     def WPrun(self):
         self.WPVersion()
         self.theme = self.WPCurrentTheme()
-        print "[*] Wordpress Theme: "+self.theme
+        msg = "[*] Wordpress Theme: "+self.theme ; print msg
+        if output : report.WriteTextFile(msg)
         ExploitDBSearch(self.url, 'Wordpress', [self.theme]).Themes()
         self.WPConfigFiles()
         self.WPHello()
@@ -215,13 +222,14 @@ class WPScan:
             regex = '<br /> Version[e]* (\d+\.\d+[\.\d+]*)'
             pattern =  re.compile(regex)
             version = re.findall(pattern,htmltext)
-            print "[*] Wordpress Version: "+str(version[0])
+            msg = "[*] Wordpress Version: "+str(version[0]); print msg
+            if output : report.WriteTextFile(msg)
         except urllib2.HTTPError, e:
             req = urllib2.Request(self.url,None,self.headers)
             htmltext = urllib2.urlopen(req).read()
-            version = re.findall('<meta name="generator" content="WordPress (\d+\.\d+[\.\d+]*)"', htmltext)
-            if version :
-                print "[*] Wordpress Version: "+str(version[0])
+            if re.findall('<meta name="generator" content="WordPress (\d+\.\d+[\.\d+]*)"', htmltext):
+                msg = "[*] Wordpress Version: "+str(version[0]); print msg
+                if output : report.WriteTextFile(msg)
 
     def WPCurrentTheme(self):
         try:
@@ -232,7 +240,7 @@ class WPScan:
             version = re.findall(pattern,htmltext)
             return str(version[0])        
         except urllib2.HTTPError, e:
-            print e.code
+            #print e.code
             pass
         
     def WPConfigFiles(self):
@@ -240,7 +248,8 @@ class WPScan:
             req = urllib2.Request(self.url+"/wp-config"+file,None,self.headers)
             try:
                 urllib2.urlopen(req)
-                print_red("[!] Configuration File Found: " +self.url+"/wp-config"+file)
+                msg = "[!] Configuration File Found: " +self.url+"/wp-config"+file; print_red(msg)
+                if output : report.WriteTextFile(msg)
             except urllib2.HTTPError, e:
                 pass
 
@@ -266,13 +275,15 @@ class WPScan:
             req = urllib2.Request(self.url+file,None,self.headers)
             try:
                 urllib2.urlopen(req)
-                print "[*] Info Disclosure: " +self.url+file
+                msg = "[*] Info Disclosure: " +self.url+file; print msg
+                if output : report.WriteTextFile(msg)
             except urllib2.HTTPError, e:
                 #print e.code
                 pass
             
     def WPFeed(self):
-        print "[*] Enumerating Wordpress Usernames via \"Feed\" ..."
+        msg = "[*] Enumerating Wordpress Usernames via \"Feed\" ..."; print msg
+        if output : report.WriteTextFile(msg)
         try:
             req = urllib2.Request(self.url+self.feed,None,self.headers)
             htmltext = urllib2.urlopen(req).read()
@@ -282,13 +293,15 @@ class WPScan:
                 self.usernames = wpUsers + self.usernames
                 self.usernames = sorted(set(self.usernames))
             for user in self.usernames:
-                print user
+                msg = user ; print msg
+                if output : report.WriteTextFile(msg)
         except urllib2.HTTPError, e:
             #print e.code
             pass
         
     def WPAuthor(self):
-        print "[*] Enumerating Wordpress Usernames via \"Author\" ..."
+        msg = "[*] Enumerating Wordpress Usernames via \"Author\" ..."; print msg
+        if output : report.WriteTextFile(msg)
         for user in range(1,20):
             try:
                 req = urllib2.Request(self.url+self.author+str(user),None,self.headers)
@@ -302,7 +315,8 @@ class WPScan:
                 pass
         self.usernames = sorted(set(self.usernames))
         for user in self.usernames:
-            print user
+            msg = user; print msg
+            if output : report.WriteTextFile(msg)
         
     def WPForgottenPassword(self):
         # Username Enumeration via Forgotten Password
@@ -324,7 +338,8 @@ class WPScan:
             htmltext = urllib2.urlopen(req).read()
             fullPath = re.findall(re.compile('Fatal error.* /(.+?)hello.php'),htmltext)
             if fullPath :
-                print "[*] Wordpress Hello Plugin Full Path Disclosure: "+self.url+"/wp-content/plugins/hello.php -> "+"/"+fullPath[0]+"hello.php"
+                msg = "[*] Wordpress Hello Plugin Full Path Disclosure: "+self.url+"/wp-content/plugins/hello.php -> "+"/"+fullPath[0]+"hello.php"; print msg
+                if output : report.WriteTextFile(msg)
         except urllib2.HTTPError, e:
             #print e.code
             pass
@@ -338,7 +353,8 @@ class WPScan:
             GenericChecks(self.url).DirectoryListing('/wp-content/plugins/'+plugin)
 
     def WPplugins(self):
-        print "[-] Searching Wordpress Plugins ..."
+        msg =  "[-] Searching Wordpress Plugins ..."; print msg
+        if output : report.WriteTextFile(msg)
         # Create Code
         q = Queue.Queue(self.queue_num)        
         # Spawn all threads into code
@@ -352,7 +368,8 @@ class WPScan:
         q.join()
 
     def WPThemes(self):
-        print "[-] Searching Wordpress Themes ..."
+        msg = "[-] Searching Wordpress Themes ..."; print msg
+        if output : report.WriteTextFile(msg)
         # Create Code
         q = Queue.Queue(self.queue_num)
         # Spawn all threads into code
@@ -689,16 +706,19 @@ class ExploitDBSearch:
         self.headers={'User-Agent':self.agent,}
         
     def Plugins(self):
-        print "[-] Searching Vulnerable Plugins from ExploitDB website ..."
+        msg = "[-] Searching Vulnerable Plugins from ExploitDB website ..." ; print msg
+        if output : report.WriteTextFile(msg)
         for plugin in self.query:
             htmltext = urllib2.urlopen("http://www.exploit-db.com/search/?action=search&filter_description="+self.cmstype+"&filter_exploit_text="+plugin).read()
             regex = '/download/(.+?)">'
             pattern =  re.compile(regex)
             ExploitID = re.findall(pattern,htmltext)
-            print plugin
+            msg =  plugin
+            if output : report.WriteTextFile(msg)
             for Eid in ExploitID:
-                print_yellow("\t[*] Vulnerable Plugin Found: http://www.exploit-db.com/exploits/"+Eid)
-
+                msg = "\t[*] Vulnerable Plugin Found: http://www.exploit-db.com/exploits/"+Eid; print_yellow(msg)
+                if output : report.WriteTextFile(msg)
+                
     def Themes(self):
         print "[-] Searching Vulnerable Theme from ExploitDB website ..."
         for theme in self.query :
@@ -707,7 +727,8 @@ class ExploitDBSearch:
             pattern =  re.compile(regex)
             ExploitID = re.findall(pattern,htmltext)
             for Eid in ExploitID:
-                print_yellow("\t[*] Vulnerable Theme Found: http://www.exploit-db.com/exploits/"+Eid)
+                msg = "\t[*] Vulnerable Theme Found: http://www.exploit-db.com/exploits/"+Eid; print_yellow(msg)
+                if output : report.WriteTextFile(msg)
 
 class NoRedirects(urllib2.HTTPRedirectHandler):
     """Redirect handler that simply raises a Redirect()."""
@@ -1114,7 +1135,9 @@ class GenericChecks:
             req = urllib2.Request(self.url+self.relPath,None,self.headers)
             htmltext = urllib2.urlopen(req).read()
             dirList = re.search("<title>Index of", htmltext,re.IGNORECASE)
-            if dirList: print "[*] Directory Listing Enabled: "+self.url+self.relPath
+            if dirList: 
+                msg = "[*] Directory Listing Enabled: "+self.url+self.relPath ; print msg
+                if output : report.WriteTextFile(msg)
         except urllib2.HTTPError, e:
             pass
         
@@ -1122,7 +1145,9 @@ class GenericChecks:
         pUrl = urlparse.urlparse(self.url)
         #clean up supplied URLs
         scheme = pUrl.scheme.lower()
-        if scheme == 'http' : msg = "[*] Website Not in HTTPS: "+self.url; Report(fn,msg).WriteTextFile(); print msg
+        if scheme == 'http' : 
+            msg = "[*] Website Not in HTTPS: "+self.url; print msg 
+            if output : report.WriteTextFile(msg)
 
     def AutocompleteOff(self,relPath):
         self.relPath = relPath
@@ -1130,7 +1155,9 @@ class GenericChecks:
             req = urllib2.Request(self.url+self.relPath,None,self.headers)
             htmltext = urllib2.urlopen(req).read()
             autoComp = re.search("autocomplete=\"off\"", htmltext,re.IGNORECASE)
-            if not autoComp : print "[*] Autocomplete Off Not Found: "+self.url+self.relPath
+            if not autoComp : 
+                msg = "[*] Autocomplete Off Not Found: "+self.url+self.relPath ; print msg
+                if output : report.WriteTextFile(msg)
         except urllib2.HTTPError, e:
             pass
         
@@ -1138,19 +1165,20 @@ class GenericChecks:
         req = urllib2.Request(self.url+"/robots.txt",None,self.headers)
         try:
             urllib2.urlopen(req)
-            print "[*] Robots.txt Found: " +self.url+"/robots.txt"
+            msg = "[*] Robots.txt Found: " +self.url+"/robots.txt"; print msg
+            if output : report.WriteTextFile(msg)
         except urllib2.HTTPError, e:
             #print e.code
             pass
 
 class Report:
-    def __init__(self,fn,log):
+    def __init__(self,fn):
         self.fn = fn
-        self.log += log
-        self.WriteTextFile(self.fn, self.log)
+        self.log = ' '.join(sys.argv)
         
-    def WriteTextFile(self):
-        f = open(fn,"w")
+    def WriteTextFile(self,msg):
+        self.log += "\n"+msg
+        f = open(self.fn,"w")
         f.write(self.log)
         f.close()
     
@@ -1165,6 +1193,7 @@ version=0.3
 verbose = False
 CMSmapUpdate = False
 BruteForcingAttack = False
+output = False
 threads = 5
 print_red = lambda x: cprint(x, 'red', None, file=sys.stderr)
 print_red_bold = lambda x: cprint(x, 'red', attrs=['bold'], file=sys.stderr)
@@ -1228,7 +1257,8 @@ if __name__ == "__main__":
             elif o in("-v", "--verbose"):
                 verbose = True
             elif o in("-o", "--out"):
-                fn = a
+                output = True
+                report = Report(a)
             elif o in("-U", "--update"):
                 CMSmapUpdate = True
             elif o in("-v", "--verbose"):
@@ -1241,7 +1271,8 @@ if __name__ == "__main__":
         sys.exit()
         
     start = time.time()
-    print_blue("[-] Date & Time: "+ time.strftime('%d/%m/%Y %H:%M:%S'))
+    msg = "[-] Date & Time: "+ time.strftime('%d/%m/%Y %H:%M:%S'); print_blue(msg)
+    if output : report.WriteTextFile(msg)
     
     # if plugins don't exist (first time of running) then initialize
     if not os.path.exists('wp_plugins.txt' or 'joomla_plugins.txt' or 'drupal_plugins.txt'):
@@ -1261,5 +1292,9 @@ if __name__ == "__main__":
     
     end = time.time()
     diffTime = end - start
-    print_blue("[-] Date & Time: "+time.strftime('%d/%m/%Y %H:%M:%S'))
-    print_blue("[-] Scan Completed in: "+str(datetime.timedelta(seconds=diffTime)).split(".")[0])
+    msg = "[-] Date & Time: "+time.strftime('%d/%m/%Y %H:%M:%S'); print_blue(msg)
+    if output : report.WriteTextFile(msg)
+    msg = "[-] Scan Completed in: "+str(datetime.timedelta(seconds=diffTime)).split(".")[0]; print_blue(msg)
+    if output : report.WriteTextFile(msg)
+    
+    

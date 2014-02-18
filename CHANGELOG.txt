@@ -20,6 +20,7 @@ Path Disclosure Via Hello plugin
 Directories Listing
 ExploitDB Searching of Plugins
 ExploitDB Searching of Themes
+Save Output to a TXT file
 
 + Joomla Scan:
 Version Detection
