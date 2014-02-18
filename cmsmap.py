@@ -1215,7 +1215,7 @@ def usage(version):
           -T, --threads   number of threads (Default: 5)
           -u, --usr       username or file 
           -p, --psw       password or file
-          -o, --out       save output in a file (Not implemented yet)
+          -o, --out       save output in a file (Not implemented for Joomla or Drupal yet)
           -U, --update    update CMSmap to the latest version
           -h, --help      show this help
           """
