@@ -2,3 +2,4 @@
 + Check for writable templates
 + Save output in a file for Joomla and Drupal
 + Double check against CMS installation in different languages 
++ Off-line passwords brute-forcing
