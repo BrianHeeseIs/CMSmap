@@ -412,7 +412,8 @@ class JooScan:
             regex = '<version>(.+?)</version>'
             pattern =  re.compile(regex)
             version = re.findall(pattern,htmltext)
-            print "[*] Joomla Version: "+str(version[0])
+            msg = "[*] Joomla Version: "+str(version[0]); print msg
+            if output : report.WriteTextFile(msg)
         except urllib2.HTTPError, e:
             #print e.code
             pass
@@ -423,8 +424,14 @@ class JooScan:
             WebTemplate = re.findall("/templates/(.+?)/", htmltext,re.IGNORECASE)
             htmltext = urllib2.urlopen(self.url+'/administrator/index.php').read()
             AdminTemplate = re.findall("/administrator/templates/(.+?)/", htmltext,re.IGNORECASE)
-            if WebTemplate : print "[*] Joomla Website Template: "+WebTemplate[0];ExploitDBSearch(self.url, "Joomla", [WebTemplate[0]]).Themes()
-            if AdminTemplate : print "[*] Joomla Administrator Template: "+AdminTemplate[0];ExploitDBSearch(self.url, "Joomla", [WebTemplate[0]]).Themes()
+            if WebTemplate : 
+                msg = "[*] Joomla Website Template: "+WebTemplate[0]; print msg;
+                if output : report.WriteTextFile(msg)
+                ExploitDBSearch(self.url, "Joomla", [WebTemplate[0]]).Themes()
+            if AdminTemplate : 
+                msg = "[*] Joomla Administrator Template: "+AdminTemplate[0]; print msg;
+                if output : report.WriteTextFile(msg)
+                ExploitDBSearch(self.url, "Joomla", [WebTemplate[0]]).Themes()
         except urllib2.HTTPError, e:
             #print e.code
             pass
@@ -434,7 +441,8 @@ class JooScan:
             req = urllib2.Request(self.url+"/configuration"+file)
             try:
                 urllib2.urlopen(req)
-                print "[*] Configuration File Found: " +self.url+"/configuration"+file
+                msg = "[*] Configuration File Found: " +self.url+"/configuration"+file; print msg
+                if output : report.WriteTextFile(msg)
             except urllib2.HTTPError, e:
                 #print e.code
                 pass        
@@ -461,7 +469,8 @@ class JooScan:
             req = urllib2.Request(self.url+file)
             try:
                 urllib2.urlopen(req)
-                print "[*] Info Disclosure: " +self.url+file
+                msg = "[*] Info Disclosure: " +self.url+file; print msg
+                if output : report.WriteTextFile(msg)
             except urllib2.HTTPError, e:
                 #print e.code
                 pass
@@ -471,11 +480,13 @@ class JooScan:
             htmltext = urllib2.urlopen(self.url+'/?format=feed').read()
             jooUsers = re.findall("<author>(.+?) \((.+?)\)</author>", htmltext,re.IGNORECASE)
             if jooUsers: 
-                print "[-] Enumerating Joomla Usernames via \"Feed\" ..."
+                msg = "[-] Enumerating Joomla Usernames via \"Feed\" ..."; print msg
+                if output : report.WriteTextFile(msg)
                 jooUsers = sorted(set(jooUsers))
                 for user in jooUsers :
                     self.usernames.append(user[1])
-                    print  user[1]+" "+user[0]
+                    msg =  user[1]+" "+user[0]; print msg
+                    if output : report.WriteTextFile(msg)
         except urllib2.HTTPError, e:
             #print e.code
             pass 
@@ -500,7 +511,8 @@ class JooScan:
             GenericChecks(self.url).DirectoryListing('/components/'+plugin)
 
     def JooComponents(self):
-        print "[-] Searching Joomla Components ..."
+        msg = "[-] Searching Joomla Components ..."; print msg
+        if output : report.WriteTextFile(msg)
         # Create Code
         q = Queue.Queue(self.queue_num)        
         # Spawn all threads into code
@@ -547,7 +559,8 @@ class DruScan:
             regex = 'Drupal (\d+\.\d+),'
             pattern =  re.compile(regex)
             version = re.findall(pattern,htmltext)
-            print "[*] Drupal Version: "+str(version[0])
+            msg = "[*] Drupal Version: "+str(version[0]); print msg
+            if output : report.WriteTextFile(msg)
         except urllib2.HTTPError, e:
             #print e.code
             pass
@@ -556,7 +569,9 @@ class DruScan:
         try:
             htmltext = urllib2.urlopen(self.url+'/index.php').read()
             DruTheme = re.findall("/themes/(.+?)/", htmltext,re.IGNORECASE)
-            if DruTheme : print "[*] Drupal Theme: "+DruTheme[0]
+            if DruTheme :
+                msg = "[*] Drupal Theme: "+DruTheme[0]; print msg
+                if output : report.WriteTextFile(msg)
             return DruTheme[0]
         except urllib2.HTTPError, e:
             #print e.code
@@ -567,7 +582,8 @@ class DruScan:
             req = urllib2.Request(self.url+"/sites/default/settings"+file)
             try:
                 urllib2.urlopen(req)
-                print "[*] Configuration File Found: " +self.url+"/sites/default/settings"+file
+                msg = "[*] Configuration File Found: " +self.url+"/sites/default/settings"+file; print msg
+                if output : report.WriteTextFile(msg)
             except urllib2.HTTPError, e:
                 #print e.code
                 pass   
@@ -611,7 +627,8 @@ class DruScan:
             req = urllib2.Request(self.url+file)
             try:
                 urllib2.urlopen(req)
-                print "[*] Info Disclosure: " +self.url+file
+                msg =  "[*] Info Disclosure: " +self.url+file; print msg
+                if output : report.WriteTextFile(msg)
             except urllib2.HTTPError, e:
                 #print e.code
                 pass
@@ -622,7 +639,8 @@ class DruScan:
         usernames = []
         try:
             urllib2.urlopen(self.url+self.views)
-            print "[-] Enumerating Drupal Usernames via \"Views\" Module..."
+            msg =  "[-] Enumerating Drupal Usernames via \"Views\" Module..."; print msg
+            if output : report.WriteTextFile(msg)
             for letter in self.alphanum:
                 htmltext = urllib2.urlopen(self.url+self.views+letter).read()
                 regex = '"(.+?)"'
@@ -630,7 +648,8 @@ class DruScan:
                 usernames = usernames + re.findall(pattern,htmltext)
             usernames = sorted(set(usernames))
             for user in usernames:
-                print user
+                msg = user; print msg
+                if output : report.WriteTextFile(msg)
         except urllib2.HTTPError, e:
             #print e.code
             pass
@@ -640,7 +659,8 @@ class DruScan:
         usernames = []
         try:
             urllib2.urlopen(self.url+self.blog)
-            print "[-] Enumerating Drupal Usernames via \"Blog\" Module..."
+            msg =  "[-] Enumerating Drupal Usernames via \"Blog\" Module..."; print msg
+            if output : report.WriteTextFile(msg)
             for blognum in range (1,50):
                 try:
                     htmltext = urllib2.urlopen(self.url+self.blog+str(blognum)).read()
@@ -648,7 +668,8 @@ class DruScan:
                     pattern =  re.compile(regex)
                     user = re.findall(pattern,htmltext)
                     usernames = usernames + user
-                    print user[0]
+                    msg = user[0] ; print msg
+                    if output : report.WriteTextFile(msg)
                 except urllib2.HTTPError, e:
                     pass
             self.usernames = usernames
@@ -666,7 +687,8 @@ class DruScan:
         try:
             htmltext = urllib2.urlopen(req).read()
             if re.findall(re.compile('Sorry,.*N0t3xist!1234.*is not recognized'),htmltext):
-                print "[*] Forgotten Password Allows Username Enumeration: "+self.url+self.forgottenPsw          
+                msg = "[*] Forgotten Password Allows Username Enumeration: "+self.url+self.forgottenPsw; print msg
+                if output : report.WriteTextFile(msg)        
         except urllib2.HTTPError, e:
             #print e.code
             pass
@@ -684,7 +706,8 @@ class DruScan:
             GenericChecks(self.url).DirectoryListing('/modules/'+plugin)
 
     def DruModules(self):
-        print "[-] Searching Drupal Modules ..."
+        msg = "[-] Searching Drupal Modules ..."; print msg
+        if output : report.WriteTextFile(msg)
         # Create Code
         q = Queue.Queue(self.queue_num)
         # Spawn all threads into code
@@ -789,11 +812,17 @@ class BruteForcer:
             req = urllib2.Request(self.url,None,self.headers)
             htmltext = urllib2.urlopen(req).read()
             m = re.search("Wordpress", htmltext)
-            if m: print "[*] CMS Detection: Wordpress"; print "[*] Wordpress Brute Forcing Attack Started"; self.WPrun()
+            if m: 
+                msg = "[*] CMS Detection: Wordpress\n[*] Wordpress Brute Forcing Attack Started"; self.WPrun(); print msg
+                if output : report.WriteTextFile(msg)
             m = re.search("Joomla", htmltext)
-            if m: print "[*] CMS Detection: Joomla"; print "[*] Joomla Brute Forcing Attack Started"; self.Joorun()
+            if m: 
+                msg = "[*] CMS Detection: Joomla\n[*] Joomla Brute Forcing Attack Started"; self.Joorun(); print msg
+                if output : report.WriteTextFile(msg)
             m = re.search("Drupal", htmltext);
-            if m: print "[*] CMS Detection: Drupal"; print "[*] Drupal Brute Forcing Attack Started"; self.Drurun()          
+            if m:
+                msg = "[*] CMS Detection: Drupal\n[*] Drupal Brute Forcing Attack Started"; self.Drurun(); print msg
+                if output : report.WriteTextFile(msg)
             
         def WPrun(self):
             self.wplogin = "/wp-login.php"
@@ -808,25 +837,33 @@ class BruteForcer:
                 for pwd in self.pswlist:
                     query_args = {"log": user ,"pwd": pwd, "wp-submit":"Log+In"}
                     data = urllib.urlencode(query_args)
-                    if verbose: print "[-] Trying Credentials: "+user+" "+pwd
+                    if verbose: 
+                        msg = "[-] Trying Credentials: "+user+" "+pwd; print msg
+                        if output : report.WriteTextFile(msg)
                     try:
                         # HTTP POST Request
                         htmltext = opener.open(self.url+self.wplogin, data).read()
                         if re.search('<strong>ERROR</strong>: Invalid username',htmltext):
-                            if verbose: print "[-] Invalid Username: "+user
+                            if verbose: 
+                                msg = "[-] Invalid Username: "+user; print msg
+                                if output : report.WriteTextFile(msg)
                             break
                         elif re.search('username <strong>(.+?)</strong> is incorrect.',htmltext):
                             userFound = True
                         elif re.search('ERROR.*block.*',htmltext,re.IGNORECASE):
-                            print "[!] Account Lockout Enabled: Your IP address has been temporary blocked. Try it later or from a different IP address"
+                            msg = "[!] Account Lockout Enabled: Your IP address has been temporary blocked. Try it later or from a different IP address"; print msg
+                            if output : report.WriteTextFile(msg)
                             return
                         elif re.search('dashboard',htmltext,re.IGNORECASE):
-                            print_red("[*] Valid Credentials: "+user+" "+pwd)
+                            msg = "[*] Valid Credentials: "+user+" "+pwd; print_red(msg)
+                            if output : report.WriteTextFile(msg)
                             self.WPValidCredentials.append([user,pwd])                       
                     except urllib2.HTTPError, e:
                         #print e.code
                         pass
-                if userFound: print_yellow("[*] Username found: "+user)
+                if userFound:
+                    msg = "[*] Username found: "+user; print_yellow(msg)
+                    if output : report.WriteTextFile(msg)
             for WPCredential in self.WPValidCredentials :
                 PostExploit(self.url).WPShell(WPCredential[0], WPCredential[1])
            
@@ -853,7 +890,8 @@ class BruteForcer:
                     try:
                         htmltext = opener.open(self.url+self.joologin, data).read()
                         if re.findall(re.compile('Joomla - Administration - Control Panel'),htmltext):
-                            print_red("[*] Valid Credentials: "+user+" "+pwd)
+                            msg = "[*] Valid Credentials: "+user+" "+pwd; print_red(msg)
+                            if output : report.WriteTextFile(msg)
                             self.JooValidCredentials.append([user,pwd])
                     except urllib2.HTTPError, e:
                         #print e.code
@@ -874,12 +912,14 @@ class BruteForcer:
                     try:
                         htmltext = urllib2.urlopen(req).read()
                         if re.findall(re.compile('Sorry, too many failed login attempts from your IP address.'),htmltext):
-                            print "[!] Account Lockout Enabled: Your IP address has been temporary blocked. Try it later or from a different IP address"
+                            msg = "[!] Account Lockout Enabled: Your IP address has been temporary blocked. Try it later or from a different IP address"; print msg
+                            if output : report.WriteTextFile(msg)
                             return
                     except urllib2.HTTPError, e:
                         #print e.code
                         if e.code == 403:
-                            print "[*] Valid Credentials: "+user+" "+pwd
+                            msg = "[*] Valid Credentials: "+user+" "+pwd; print_red(msg)
+                            if output : report.WriteTextFile(msg)
                             self.DruValidCredentials.append([user,pwd]) 
             for DruCredential in self.DruValidCredentials :
                 PostExploit(self.url).DruShell(DruCredential[0], DruCredential[1])
@@ -1215,7 +1255,7 @@ def usage(version):
           -T, --threads   number of threads (Default: 5)
           -u, --usr       username or file 
           -p, --psw       password or file
-          -o, --out       save output in a file (Not implemented for Joomla or Drupal yet)
+          -o, --out       save output in a file
           -U, --update    update CMSmap to the latest version
           -h, --help      show this help
           """
