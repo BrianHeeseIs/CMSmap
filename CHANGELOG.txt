@@ -5,6 +5,8 @@ Get Drupal Plugins via Drupal site
 CMSmap update
 
 + CMS Type Detection
+HTML Source code Verification
+Default Configuration File Verification
 
 + Wordpress Scan:
 Version Detection

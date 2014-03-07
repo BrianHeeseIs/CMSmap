@@ -161,15 +161,48 @@ class Scanner:
             if re.search("Wordpress", htmltext,re.IGNORECASE):
                 msg = "[*] CMS Detection: Wordpress"; print msg
                 if output : report.WriteTextFile(msg)
-                wordpress = WPScan(self.url,self.threads).WPrun()
+                req = urllib2.Request(self.url+"/sites/default/settings.php")
+                try:
+                    urllib2.urlopen(req)
+                    WPScan(self.url,self.threads).WPrun()
+                except urllib2.HTTPError, e:
+                    #print e.code
+                    msg = "[!] WordPress Config File Not Found: "+self.url+"/wp-config.php"; print_red(msg)
+                    if output : report.WriteTextFile(msg)
+                    msg = "[-] You are scanning the wrong web directory"; print_red(msg)
+                    if output : report.WriteTextFile(msg)
+                    sys.exit() 
+                    
             if re.search("Joomla", htmltext,re.IGNORECASE):
                 msg = "[*] CMS Detection: Joomla"; print msg
                 if output : report.WriteTextFile(msg)
-                joomla = JooScan(self.url,self.threads).Joorun()
+                req = urllib2.Request(self.url+"/sites/default/settings.php")
+                try:
+                    urllib2.urlopen(req)
+                    JooScan(self.url,self.threads).Joorun()
+                except urllib2.HTTPError, e:
+                    #print e.code
+                    msg = "[!] Joomla Config File Not Found: "+self.url+"/configuration.php"; print_red(msg)
+                    if output : report.WriteTextFile(msg)
+                    msg = "[-] You are scanning the wrong web directory"; print_red(msg)
+                    if output : report.WriteTextFile(msg)
+                    sys.exit()                
+                
             if re.search("Drupal", htmltext,re.IGNORECASE):
                 msg = "[*] CMS Detection: Drupal"; print msg
                 if output : report.WriteTextFile(msg)
-                drupal = DruScan(self.url,self.threads).Drurun()
+                req = urllib2.Request(self.url+"/sites/default/settings.php")
+                try:
+                    urllib2.urlopen(req)
+                    DruScan(self.url,self.threads).Drurun()
+                except urllib2.HTTPError, e:
+                    #print e.code
+                    msg = "[!] Drupal Config File Not Found: "+self.url+"/sites/default/settings.php"; print_red(msg)
+                    if output : report.WriteTextFile(msg)
+                    msg = "[-] You are scanning the wrong web directory"; print_red(msg)
+                    if output : report.WriteTextFile(msg)
+                    sys.exit()
+                
         except urllib2.URLError, e:
             print_red("[!] Website Unreachable: "+self.url)
             sys.exit()          
@@ -736,7 +769,7 @@ class ExploitDBSearch:
             regex = '/download/(.+?)">'
             pattern =  re.compile(regex)
             ExploitID = re.findall(pattern,htmltext)
-            msg =  plugin
+            msg =  plugin; print msg
             if output : report.WriteTextFile(msg)
             for Eid in ExploitID:
                 msg = "\t[*] Vulnerable Plugin Found: http://www.exploit-db.com/exploits/"+Eid; print_yellow(msg)
@@ -769,7 +802,7 @@ class ThreadScanner(threading.Thread):
         self.pluginPath = pluginPath
         self.pluginsFound = pluginsFound
         self.agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
-        self.headers={'User-Agent':self.agent,}
+        self.headers={'User-Agent':self.agent,'Accept-Encoding': None,}
 
     def run(self):
         while True:
