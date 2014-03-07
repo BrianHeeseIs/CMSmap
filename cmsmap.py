@@ -161,7 +161,7 @@ class Scanner:
             if re.search("Wordpress", htmltext,re.IGNORECASE):
                 msg = "[*] CMS Detection: Wordpress"; print msg
                 if output : report.WriteTextFile(msg)
-                req = urllib2.Request(self.url+"/sites/default/settings.php")
+                req = urllib2.Request(self.url+"/wp-config.php")
                 try:
                     urllib2.urlopen(req)
                     WPScan(self.url,self.threads).WPrun()
@@ -176,7 +176,7 @@ class Scanner:
             if re.search("Joomla", htmltext,re.IGNORECASE):
                 msg = "[*] CMS Detection: Joomla"; print msg
                 if output : report.WriteTextFile(msg)
-                req = urllib2.Request(self.url+"/sites/default/settings.php")
+                req = urllib2.Request(self.url+"/configuration.php")
                 try:
                     urllib2.urlopen(req)
                     JooScan(self.url,self.threads).Joorun()
