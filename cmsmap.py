@@ -1382,6 +1382,6 @@ if __name__ == "__main__":
     if output : report.WriteTextFile(msg)
     msg = "[-] Scan Completed in: "+str(datetime.timedelta(seconds=diffTime)).split(".")[0]; print_blue(msg)
     if output : report.WriteTextFile(msg)
-    if output: msg = "[-] Output File Saved in: "+os.getcwd()+os.sep+report.fn; print msg; report.WriteTextFile(msg)
+    if output: msg = "[-] Output File Saved in: "+os.getcwd()+os.sep+report.fn+"\n"; print msg; report.WriteTextFile(msg)
     
     
