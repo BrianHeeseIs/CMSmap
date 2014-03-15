@@ -3,6 +3,7 @@ import smtplib, base64, os, sys, getopt, urllib2, urllib, re, socket, time, http
 import itertools, urlparse, threading, Queue, multiprocessing, cookielib, datetime
 from thirdparty.multipart import multipartpost
 from thirdparty.termcolor.termcolor import cprint,colored
+from thirdparty.progressbar import progressbar
 
 class Initialize:
     # Save Wordpress, Joomla and Drupal plugins in a local file
@@ -169,7 +170,7 @@ class Scanner:
                     #print e.code
                     msg = "[!] WordPress Config File Not Found: "+self.url+"/wp-config.php"; print_red(msg)
                     if output : report.WriteTextFile(msg)
-                    msg = "[-] You are scanning the wrong web directory"; print_red(msg)
+                    msg = "[-] Probably you are scanning the wrong web directory"; print_red(msg)
                     if output : report.WriteTextFile(msg)
                     sys.exit() 
                     
@@ -184,7 +185,7 @@ class Scanner:
                     #print e.code
                     msg = "[!] Joomla Config File Not Found: "+self.url+"/configuration.php"; print_red(msg)
                     if output : report.WriteTextFile(msg)
-                    msg = "[-] You are scanning the wrong web directory"; print_red(msg)
+                    msg = "[-] Probably you are scanning the wrong web directory"; print_red(msg)
                     if output : report.WriteTextFile(msg)
                     sys.exit()                
                 
@@ -199,7 +200,7 @@ class Scanner:
                     #print e.code
                     msg = "[!] Drupal Config File Not Found: "+self.url+"/sites/default/settings.php"; print_red(msg)
                     if output : report.WriteTextFile(msg)
-                    msg = "[-] You are scanning the wrong web directory"; print_red(msg)
+                    msg = "[-] Probably you are the wrong web directory"; print_red(msg)
                     if output : report.WriteTextFile(msg)
                     sys.exit()
                 
@@ -226,6 +227,7 @@ class WPScan:
         self.confFiles=['','.php~','.php.txt','.php.old','.php_old','.php-old','.php.save','.php.swp','.php.swo','.php_bak','.php-bak','.php.original','.php.old','.php.orig','.php.bak','.save','.old','.bak','.orig','.original','.txt']
         self.plugins = [line.strip() for line in open('wp_plugins.txt')]
         self.themes = [line.strip() for line in open('wp_themes.txt')]
+        self.widgets = ['Progress: ', progressbar.Percentage(), ' ', progressbar.Bar(marker=progressbar.RotatingMarker()),' ', progressbar.ETA(), ' ', progressbar.FileTransferSpeed()]
 
     def WPrun(self):
         self.WPVersion()
@@ -386,19 +388,22 @@ class WPScan:
             GenericChecks(self.url).DirectoryListing('/wp-content/plugins/'+plugin)
 
     def WPplugins(self):
-        msg =  "[-] Searching Wordpress Plugins ..."; print msg
+        msg =  "[-] Searching Wordpress Plugins ..."; print msg           
         if output : report.WriteTextFile(msg)
+        self.pbar = progressbar.ProgressBar(widgets=self.widgets, maxval=len(self.plugins)).start()
         # Create Code
         q = Queue.Queue(self.queue_num)        
         # Spawn all threads into code
         for u in range(self.thread_num):
             t = ThreadScanner(self.url,self.pluginPath,pluginsFound,q)
             t.daemon = True
-            t.start()                
+            t.start()
         # Add all plugins to the queue
-        for i in self.plugins:
-            q.put(i)  
+        for r,i in enumerate(self.plugins):
+            q.put(i)
+            self.pbar.update(r+1)
         q.join()
+        self.pbar.finish()
 
     def WPThemes(self):
         msg = "[-] Searching Wordpress Themes ..."; print msg
@@ -426,6 +431,7 @@ class JooScan:
         self.weakpsw = ['password', 'admin','123456','abc123','qwerty']
         self.confFiles=['','.php~','.php.txt','.php.old','.php_old','.php-old','.php.save','.php.swp','.php.swo','.php_bak','.php-bak','.php.original','.php.old','.php.orig','.php.bak','.save','.old','.bak','.orig','.original','.txt']
         self.plugins = [line.strip() for line in open('joomla_plugins.txt')]
+        self.widgets = ['Progress: ', progressbar.Percentage(), ' ', progressbar.Bar(marker=progressbar.RotatingMarker()),' ', progressbar.ETA(), ' ', progressbar.FileTransferSpeed()]
 
     def Joorun(self):
         self.JooVersion()
@@ -546,6 +552,7 @@ class JooScan:
     def JooComponents(self):
         msg = "[-] Searching Joomla Components ..."; print msg
         if output : report.WriteTextFile(msg)
+        self.pbar = progressbar.ProgressBar(widgets=self.widgets, maxval=len(self.plugins)).start()
         # Create Code
         q = Queue.Queue(self.queue_num)        
         # Spawn all threads into code
@@ -554,9 +561,11 @@ class JooScan:
             t.daemon = True
             t.start()
         # Add all plugins to the queue
-        for i in self.plugins:
+        for r,i in enumerate(self.plugins):
             q.put(i)  
+            self.pbar.update(r+1)
         q.join()
+        self.pbar.finish()
         
 class DruScan:
     # Scan Drupal site
@@ -570,7 +579,8 @@ class DruScan:
         self.plugins = [line.strip() for line in open('drupal_plugins.txt')]
         self.confFiles=['','.php~','.php.txt','.php.old','.php_old','.php-old','.php.save','.php.swp','.php.swo','.php_bak','.php-bak','.php.original','.php.old','.php.orig','.php.bak','.save','.old','.bak','.orig','.original','.txt']
         self.usernames = []
-        
+        self.widgets = ['Progress: ', progressbar.Percentage(), ' ', progressbar.Bar(marker=progressbar.RotatingMarker()),' ', progressbar.ETA(), ' ', progressbar.FileTransferSpeed()]
+
     def Drurun(self):
         self.DruVersion()
         self.Drutheme = self.DruTheme()
@@ -741,6 +751,7 @@ class DruScan:
     def DruModules(self):
         msg = "[-] Searching Drupal Modules ..."; print msg
         if output : report.WriteTextFile(msg)
+        self.pbar = progressbar.ProgressBar(widgets=self.widgets, maxval=len(self.plugins)).start()
         # Create Code
         q = Queue.Queue(self.queue_num)
         # Spawn all threads into code
@@ -749,9 +760,11 @@ class DruScan:
             t.daemon = True
             t.start()
         # Add all plugins to the queue
-        for i in self.plugins:
+        for r,i in enumerate(self.plugins):
             q.put(i)  
+            self.pbar.update(r+1)
         q.join()
+        self.pbar.finish()
     
 class ExploitDBSearch:
     def __init__(self,url,cmstype,query):
@@ -811,10 +824,10 @@ class ThreadScanner(threading.Thread):
             req = urllib2.Request(self.url+self.pluginPath+plugin+"/",None, self.headers)
             noRedirOpener = urllib2.build_opener(NoRedirects())        
             try:
-                noRedirOpener.open(req); print plugin; self.pluginsFound.append(plugin)
+                noRedirOpener.open(req); self.pluginsFound.append(plugin)
             except urllib2.HTTPError, e:
                 #print e.code
-                if e.code == 403 : print plugin; self.pluginsFound.append(plugin)
+                if e.code == 403 : self.pluginsFound.append(plugin)
             except urllib2.URLError, e:
                 print "[!] Thread Error: If this error persists, reduce number of threads"
                 if verbose : print e.reason
@@ -1251,7 +1264,7 @@ class Report:
         
     def WriteTextFile(self,msg):
         self.log += "\n"+msg
-        f = open(self.fn,"w")
+        f = open(os.getcwd()+os.sep+self.fn,"w")
         f.write(self.log)
         f.close()
     
@@ -1369,5 +1382,6 @@ if __name__ == "__main__":
     if output : report.WriteTextFile(msg)
     msg = "[-] Scan Completed in: "+str(datetime.timedelta(seconds=diffTime)).split(".")[0]; print_blue(msg)
     if output : report.WriteTextFile(msg)
+    if output: msg = "[-] Output File Saved in: "+os.getcwd()+os.sep+report.fn; print msg; report.WriteTextFile(msg)
     
     

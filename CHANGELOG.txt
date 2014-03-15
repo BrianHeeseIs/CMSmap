@@ -23,6 +23,7 @@ Directories Listing
 ExploitDB Searching of Plugins
 ExploitDB Searching of Themes
 Save Output to a TXT file
+ProgressBar
 
 + Joomla Scan:
 Version Detection
@@ -35,6 +36,7 @@ Components Enumeration
 ExploitDB Searching of Components
 Directories Listing
 Save Output to a TXT file
+ProgressBar
 
 + Drupal Scan:
 Version Detection
@@ -49,6 +51,7 @@ Modules Enumeration
 ExploitDB Searching of Modules
 Directories Listing
 Save Output to a TXT file
+ProgressBar
 
 + Wordpress Brute Forcing Attack
 + Joomla Brute Forcing Attack
