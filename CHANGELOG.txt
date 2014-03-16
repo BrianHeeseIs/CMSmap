@@ -69,6 +69,7 @@ Save Output to a TXT file
 Wordpress Web Shell via Plugin
 Joomla Web Shell via Component
 Drupal Web Shell via Module
+Save Output to a TXT file
 
 + Files
 wp_plugins.txt
