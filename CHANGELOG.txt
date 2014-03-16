@@ -24,6 +24,7 @@ ExploitDB Searching of Plugins
 ExploitDB Searching of Themes
 Save Output to a TXT file
 ProgressBar
+Timthumbs Detection
 
 + Joomla Scan:
 Version Detection

@@ -223,10 +223,15 @@ class WPScan:
         self.forgottenPsw = "/wp-login.php?action=lostpassword"
         self.weakpsw = ['password', 'admin','123456','abc123','qwerty']
         self.usernames = []
+        self.pluginsFound = []
+        self.themesFound = []
+        self.timthumbsFound = []
         self.theme = None
+        self.notExistingCode = 404
         self.confFiles=['','.php~','.php.txt','.php.old','.php_old','.php-old','.php.save','.php.swp','.php.swo','.php_bak','.php-bak','.php.original','.php.old','.php.orig','.php.bak','.save','.old','.bak','.orig','.original','.txt']
         self.plugins = [line.strip() for line in open('wp_plugins.txt')]
         self.themes = [line.strip() for line in open('wp_themes.txt')]
+        self.timthumbs = [line.strip() for line in open('wp_timthumbs.txt')]
         self.widgets = ['Progress: ', progressbar.Percentage(), ' ', progressbar.Bar(marker=progressbar.RotatingMarker()),' ', progressbar.ETA(), ' ', progressbar.FileTransferSpeed()]
 
     def WPrun(self):
@@ -244,10 +249,13 @@ class WPScan:
         GenericChecks(self.url).AutocompleteOff('/wp-login.php')
         self.WPDefaultFiles()
         # === Takes Long ===
+        self.WPNotExisitingCode()
         self.WPplugins()
-        ExploitDBSearch(self.url, 'Wordpress', pluginsFound).Plugins()
+        ExploitDBSearch(self.url, 'Wordpress', self.pluginsFound).Plugins()
         self.WPThemes()
-        ExploitDBSearch(self.url, 'Wordpress', themesFound).Themes()
+        # Search for other vulnerable themes installed
+        ExploitDBSearch(self.url, 'Wordpress', self.themesFound).Themes()
+        self.WPTimThumbs()
         self.WPDirsListing()
               
     def WPVersion(self):
@@ -384,9 +392,18 @@ class WPScan:
         GenericChecks(self.url).DirectoryListing('/wp-content/'+self.theme)
         GenericChecks(self.url).DirectoryListing('/wp-includes/')
         GenericChecks(self.url).DirectoryListing('/wp-admin/')        
-        for plugin in pluginsFound:
+        for plugin in self.pluginsFound:
             GenericChecks(self.url).DirectoryListing('/wp-content/plugins/'+plugin)
 
+    def WPNotExisitingCode(self):
+        req = urllib2.Request(self.url+self.pluginPath+"NotExisingPlugin1234!"+"/",None, self.headers)
+        noRedirOpener = urllib2.build_opener(NoRedirects())        
+        try:
+            noRedirOpener.open(req)
+        except urllib2.HTTPError, e:
+            #print e.code
+            self.notExistingCode = e.code
+                        
     def WPplugins(self):
         msg =  "[-] Searching Wordpress Plugins ..."; print msg           
         if output : report.WriteTextFile(msg)
@@ -395,7 +412,7 @@ class WPScan:
         q = Queue.Queue(self.queue_num)        
         # Spawn all threads into code
         for u in range(self.thread_num):
-            t = ThreadScanner(self.url,self.pluginPath,pluginsFound,q)
+            t = ThreadScanner(self.url,self.pluginPath,self.pluginsFound,self.notExistingCode,q)
             t.daemon = True
             t.start()
         # Add all plugins to the queue
@@ -405,6 +422,32 @@ class WPScan:
         q.join()
         self.pbar.finish()
 
+    def WPTimThumbs(self):
+        msg =  "[-] Searching Wordpress TimThumbs ..."; print msg           
+        if output : report.WriteTextFile(msg)
+        self.pbar = progressbar.ProgressBar(widgets=self.widgets, maxval=len(self.timthumbs)).start()
+        # Create Code
+        q = Queue.Queue(self.queue_num)        
+        # Spawn all threads into code
+        for u in range(self.thread_num):
+            t = ThreadScanner(self.url,"/",self.timthumbsFound,self.notExistingCode,q)
+            t.daemon = True
+            t.start()
+        # Add all plugins to the queue
+        for r,i in enumerate(self.timthumbs):
+            q.put(i)
+            self.pbar.update(r+1)
+        q.join()
+        self.pbar.finish()
+        if self.timthumbsFound:
+            msg = "[*] Timthumbs Found: "; print msg
+            if output : report.WriteTextFile(msg)
+            for timthumbsFound in self.timthumbsFound:
+                msg = self.url+"/"+timthumbsFound; print msg
+                if output : report.WriteTextFile(msg)
+            msg= "\t[*] Potentially Vulnerable to File Upload: http://www.exploit-db.com/wordpress-timthumb-exploitation"; print msg
+            if output : report.WriteTextFile(msg)
+            
     def WPThemes(self):
         msg = "[-] Searching Wordpress Themes ..."; print msg
         if output : report.WriteTextFile(msg)
@@ -412,22 +455,29 @@ class WPScan:
         q = Queue.Queue(self.queue_num)
         # Spawn all threads into code
         for u in range(self.thread_num):
-            t = ThreadScanner(self.url,self.themePath,themesFound,q)
+            t = ThreadScanner(self.url,self.themePath,self.themesFound,self.notExistingCode,q)
             t.daemon = True
             t.start()                
         # Add all theme to the queue
         for i in self.themes:
             q.put(i)  
         q.join()
+        for themesFound in self.themesFound:
+            msg = themesFound; print msg
+            if output : report.WriteTextFile(msg)
 
 class JooScan:
     # Scan Joomla site
     def __init__(self,url,threads):
+        self.agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
+        self.headers={'User-Agent':self.agent,}
         self.url = url
         self.queue_num = 5
         self.thread_num = threads
         self.usernames = []
         self.pluginPath = "/components/"
+        self.pluginsFound = []
+        self.notExistingCode = 404
         self.weakpsw = ['password', 'admin','123456','abc123','qwerty']
         self.confFiles=['','.php~','.php.txt','.php.old','.php_old','.php-old','.php.save','.php.swp','.php.swo','.php_bak','.php-bak','.php.original','.php.old','.php.orig','.php.bak','.save','.old','.bak','.orig','.original','.txt']
         self.plugins = [line.strip() for line in open('joomla_plugins.txt')]
@@ -441,8 +491,9 @@ class JooScan:
         self.JooDefaultFiles()
         # === Takes Long ===
         BruteForcer(self.url,self.usernames,self.weakpsw).Joorun()
+        self.JooNotExisitingCode()
         self.JooComponents()
-        ExploitDBSearch(self.url, "Joomla", pluginsFound).Plugins()
+        ExploitDBSearch(self.url, "Joomla", self.pluginsFound).Plugins()
         self.JooDirsListing()
         
     def JooVersion(self):
@@ -546,8 +597,17 @@ class JooScan:
         GenericChecks(self.url).DirectoryListing('/plugins/')
         GenericChecks(self.url).DirectoryListing('/templates/')
         GenericChecks(self.url).DirectoryListing('/tmp/')
-        for plugin in pluginsFound:
+        for plugin in self.pluginsFound:
             GenericChecks(self.url).DirectoryListing('/components/'+plugin)
+            
+    def JooNotExisitingCode(self):
+        req = urllib2.Request(self.url+self.pluginPath+"NotExisingPlugin1234!"+"/",None, self.headers)
+        noRedirOpener = urllib2.build_opener(NoRedirects())        
+        try:
+            noRedirOpener.open(req)
+        except urllib2.HTTPError, e:
+            #print e.code
+            self.notExistingCode = e.code
 
     def JooComponents(self):
         msg = "[-] Searching Joomla Components ..."; print msg
@@ -557,7 +617,7 @@ class JooScan:
         q = Queue.Queue(self.queue_num)        
         # Spawn all threads into code
         for u in range(self.thread_num):
-            t = ThreadScanner(self.url,self.pluginPath,pluginsFound,q)
+            t = ThreadScanner(self.url,self.pluginPath,self.pluginsFound,self.notExistingCode,q)
             t.daemon = True
             t.start()
         # Add all plugins to the queue
@@ -570,15 +630,19 @@ class JooScan:
 class DruScan:
     # Scan Drupal site
     def __init__(self,url,threads):
+        self.agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
+        self.headers={'User-Agent':self.agent,}
         self.url = url
         self.queue_num = 5
         self.thread_num = threads
+        self.notExistingCode = 404
         self.pluginPath = "/modules/"
         self.forgottenPsw = "/?q=user/password"
         self.weakpsw = ['password', 'admin','123456','abc123','qwerty']
         self.plugins = [line.strip() for line in open('drupal_plugins.txt')]
         self.confFiles=['','.php~','.php.txt','.php.old','.php_old','.php-old','.php.save','.php.swp','.php.swo','.php_bak','.php-bak','.php.original','.php.old','.php.orig','.php.bak','.save','.old','.bak','.orig','.original','.txt']
         self.usernames = []
+        self.pluginsFound = []
         self.widgets = ['Progress: ', progressbar.Percentage(), ' ', progressbar.Bar(marker=progressbar.RotatingMarker()),' ', progressbar.ETA(), ' ', progressbar.FileTransferSpeed()]
 
     def Drurun(self):
@@ -592,8 +656,9 @@ class DruScan:
         # === Takes Long ===
         BruteForcer(self.url,self.usernames,self.weakpsw).Drurun()
         self.DruForgottenPassword()
+        self.DruNotExisitingCode()
         self.DruModules()
-        ExploitDBSearch(self.url, "Drupal", pluginsFound).Plugins()
+        ExploitDBSearch(self.url, "Drupal", self.pluginsFound).Plugins()
         self.DruDirsListing()
         
     def DruVersion(self):
@@ -745,9 +810,18 @@ class DruScan:
         GenericChecks(self.url).DirectoryListing('/sites/')
         GenericChecks(self.url).DirectoryListing('/includes/')
         GenericChecks(self.url).DirectoryListing('/themes/')
-        for plugin in pluginsFound:
+        for plugin in self.pluginsFound:
             GenericChecks(self.url).DirectoryListing('/modules/'+plugin)
-
+            
+    def DruNotExisitingCode(self):
+        req = urllib2.Request(self.url+self.pluginPath+"NotExisingPlugin1234!"+"/",None, self.headers)
+        noRedirOpener = urllib2.build_opener(NoRedirects())        
+        try:
+            noRedirOpener.open(req)
+        except urllib2.HTTPError, e:
+            #print e.code
+            self.notExistingCode = e.code
+            
     def DruModules(self):
         msg = "[-] Searching Drupal Modules ..."; print msg
         if output : report.WriteTextFile(msg)
@@ -756,7 +830,7 @@ class DruScan:
         q = Queue.Queue(self.queue_num)
         # Spawn all threads into code
         for u in range(self.thread_num):
-            t = ThreadScanner(self.url,self.pluginPath,pluginsFound,q)
+            t = ThreadScanner(self.url,self.pluginPath,self.pluginsFound,self.notExistingCode,q)
             t.daemon = True
             t.start()
         # Add all plugins to the queue
@@ -808,12 +882,13 @@ class NoRedirects(urllib2.HTTPRedirectHandler):
         
 class ThreadScanner(threading.Thread):
     # Multi-threading Scan Class (just for Wordpress for now) 
-    def __init__(self,url,pluginPath,pluginsFound,q):
+    def __init__(self,url,pluginPath,pluginsFound,notExistingCode,q):
         threading.Thread.__init__ (self)
         self.url = url
         self.q = q
         self.pluginPath = pluginPath
         self.pluginsFound = pluginsFound
+        self.notExistingCode = notExistingCode
         self.agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
         self.headers={'User-Agent':self.agent,'Accept-Encoding': None,}
 
@@ -827,7 +902,7 @@ class ThreadScanner(threading.Thread):
                 noRedirOpener.open(req); self.pluginsFound.append(plugin)
             except urllib2.HTTPError, e:
                 #print e.code
-                if e.code == 403 : self.pluginsFound.append(plugin)
+                if e.code == 403 or e.code != self.notExistingCode : self.pluginsFound.append(plugin)
             except urllib2.URLError, e:
                 print "[!] Thread Error: If this error persists, reduce number of threads"
                 if verbose : print e.reason
@@ -1273,8 +1348,6 @@ class Report:
     
 
 # Global Variables =============================================================================================
-pluginsFound = []
-themesFound = []
 version=0.3
 verbose = False
 CMSmapUpdate = False
