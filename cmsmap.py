@@ -449,7 +449,6 @@ class WPScan:
             self.pbar.update(r+1)
         q.join()
         self.pbar.finish()
-        
         if self.timthumbsFound:
             msg = "[*] Timthumbs Found: "; print msg
             if output : report.WriteTextFile(msg)
@@ -462,6 +461,7 @@ class WPScan:
     def WPThemes(self):
         msg = "[-] Searching Wordpress Themes ..."; print msg
         if output : report.WriteTextFile(msg)
+        self.pbar = progressbar.ProgressBar(widgets=self.widgets, maxval=len(self.themes)).start()
         # Create Code
         q = Queue.Queue(self.queue_num)
         # Spawn all threads into code
@@ -470,9 +470,11 @@ class WPScan:
             t.daemon = True
             t.start()                
         # Add all theme to the queue
-        for i in self.themes:
-            q.put(i)  
+        for r,i in enumerate(self.themes):
+            q.put(i)
+            self.pbar.update(r+1)
         q.join()
+        self.pbar.finish()
         for themesFound in self.themesFound:
             msg = themesFound; print msg
             if output : report.WriteTextFile(msg)
