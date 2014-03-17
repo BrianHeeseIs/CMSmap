@@ -174,7 +174,7 @@ class Scanner:
                     if output : report.WriteTextFile(msg)
                     sys.exit() 
                     
-            if re.search("Joomla", htmltext,re.IGNORECASE):
+            elif re.search("Joomla", htmltext,re.IGNORECASE):
                 msg = "[*] CMS Detection: Joomla"; print msg
                 if output : report.WriteTextFile(msg)
                 req = urllib2.Request(self.url+"/configuration.php")
@@ -189,7 +189,7 @@ class Scanner:
                     if output : report.WriteTextFile(msg)
                     sys.exit()                
                 
-            if re.search("Drupal", htmltext,re.IGNORECASE):
+            elif re.search("Drupal", htmltext,re.IGNORECASE):
                 msg = "[*] CMS Detection: Drupal"; print msg
                 if output : report.WriteTextFile(msg)
                 req = urllib2.Request(self.url+"/sites/default/settings.php")
@@ -456,7 +456,7 @@ class WPScan:
             for timthumbsFound in self.timthumbsFound:
                 msg = self.url+"/"+timthumbsFound; print msg
                 if output : report.WriteTextFile(msg)
-            msg= "\t[*] Potentially Vulnerable to File Upload: http://www.exploit-db.com/wordpress-timthumb-exploitation"; print msg
+            msg= "\t[*] Potentially Vulnerable to File Upload: http://www.exploit-db.com/wordpress-timthumb-exploitation"; print_yellow(msg)
             if output : report.WriteTextFile(msg)
             
     def WPThemes(self):
