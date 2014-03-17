@@ -501,10 +501,10 @@ class JooScan:
         self.JooTemplate()
         self.JooConfigFiles()
         self.JooFeed()
-        self.JooDefaultFiles()
-        GenericChecks(self.url).CommonFiles()
-        # === Takes Long ===
         BruteForcer(self.url,self.usernames,self.weakpsw).Joorun()
+        self.JooDefaultFiles()
+        # === Takes Long ===
+        GenericChecks(self.url).CommonFiles()
         self.JooNotExisitingCode()
         self.JooComponents()
         ExploitDBSearch(self.url, "Joomla", self.pluginsFound).Plugins()
@@ -671,10 +671,10 @@ class DruScan:
         self.DruConfigFiles()
         self.DruViews()
         self.DruBlog()
-        self.DefaultFiles()
-        GenericChecks(self.url).CommonFiles()
-        # === Takes Long ===
         BruteForcer(self.url,self.usernames,self.weakpsw).Drurun()
+        self.DefaultFiles()
+        # === Takes Long ===
+        GenericChecks(self.url).CommonFiles()
         self.DruForgottenPassword()
         self.DruNotExisitingCode()
         self.DruModules()
