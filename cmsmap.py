@@ -251,6 +251,7 @@ class WPScan:
         self.WPForgottenPassword()
         GenericChecks(self.url).AutocompleteOff('/wp-login.php')
         self.WPDefaultFiles()
+        GenericChecks(self.url).CommonFiles()
         # === Takes Long ===
         self.WPNotExisitingCode()
         self.WPplugins()
@@ -301,31 +302,37 @@ class WPScan:
 
     def WPDefaultFiles(self):
         # Check for default files
-        defFiles=['/readme.html',
-                  '/license.txt',
-                  '/wp-config-sample.php',
-                  '/wp-includes/images/crystal/license.txt',
-                  '/wp-includes/images/crystal/license.txt',
-                  '/wp-includes/js/plupload/license.txt',
-                  '/wp-includes/js/plupload/changelog.txt',
-                  '/wp-includes/js/tinymce/license.txt',
-                  '/wp-includes/js/tinymce/plugins/spellchecker/changelog.txt',
-                  '/wp-includes/js/swfupload/license.txt',
-                  '/wp-includes/ID3/license.txt',
-                  '/wp-includes/ID3/readme.txt',
-                  '/wp-includes/ID3/license.commercial.txt',
-                  '/wp-content/themes/twentythirteen/fonts/COPYING.txt',
-                  '/wp-content/themes/twentythirteen/fonts/LICENSE.txt'
-                  ]
-        for file in defFiles:
+        self.defFilesFound = []
+        msg = "[-] Default WordPress Files:"; print msg
+        if output : report.WriteTextFile(msg)
+        self.defFiles=['/readme.html',
+                      '/license.txt',
+                      '/xmlrpc.php',
+                      '/wp-config-sample.php',
+                      '/wp-includes/images/crystal/license.txt',
+                      '/wp-includes/images/crystal/license.txt',
+                      '/wp-includes/js/plupload/license.txt',
+                      '/wp-includes/js/plupload/changelog.txt',
+                      '/wp-includes/js/tinymce/license.txt',
+                      '/wp-includes/js/tinymce/plugins/spellchecker/changelog.txt',
+                      '/wp-includes/js/swfupload/license.txt',
+                      '/wp-includes/ID3/license.txt',
+                      '/wp-includes/ID3/readme.txt',
+                      '/wp-includes/ID3/license.commercial.txt',
+                      '/wp-content/themes/twentythirteen/fonts/COPYING.txt',
+                      '/wp-content/themes/twentythirteen/fonts/LICENSE.txt'
+                      ]
+        for file in self.defFiles:
             req = urllib2.Request(self.url+file,None,self.headers)
             try:
                 urllib2.urlopen(req)
-                msg = "[*] Info Disclosure: " +self.url+file; print msg
-                if output : report.WriteTextFile(msg)
+                self.defFilesFound.append(self.url+file)
             except urllib2.HTTPError, e:
                 #print e.code
                 pass
+        for file in self.defFiles:
+            msg = "\t"+self.url+file; print msg
+            if output : report.WriteTextFile(msg)
             
     def WPFeed(self):
         msg = "[*] Enumerating Wordpress Usernames via \"Feed\" ..."; print msg
@@ -442,6 +449,7 @@ class WPScan:
             self.pbar.update(r+1)
         q.join()
         self.pbar.finish()
+        
         if self.timthumbsFound:
             msg = "[*] Timthumbs Found: "; print msg
             if output : report.WriteTextFile(msg)
@@ -492,6 +500,7 @@ class JooScan:
         self.JooConfigFiles()
         self.JooFeed()
         self.JooDefaultFiles()
+        GenericChecks(self.url).CommonFiles()
         # === Takes Long ===
         BruteForcer(self.url,self.usernames,self.weakpsw).Joorun()
         self.JooNotExisitingCode()
@@ -534,15 +543,18 @@ class JooScan:
             req = urllib2.Request(self.url+"/configuration"+file)
             try:
                 urllib2.urlopen(req)
-                msg = "[*] Configuration File Found: " +self.url+"/configuration"+file; print msg
+                msg = "[*] Configuration File Found: " +self.url+"/configuration"+file; print_red(msg)
                 if output : report.WriteTextFile(msg)
             except urllib2.HTTPError, e:
                 #print e.code
                 pass        
     
     def JooDefaultFiles(self):
+        self.defFilesFound = []
+        msg = "[-] Joomla Default Files: "
+        if output : report.WriteTextFile(msg)
         # Check for default files
-        defFiles=['/README.txt',
+        self.defFiles=['/README.txt',
                   '/htaccess.txt',
                   '/administrator/templates/hathor/LICENSE.txt',
                   '/web.config.txt',
@@ -557,17 +569,19 @@ class JooScan:
                   '/libraries/simplepie/LICENSE.txt',
                   '/libraries/simplepie/idn/ReadMe.txt',
                   ]
-        
-        for file in defFiles:
-            req = urllib2.Request(self.url+file)
+        for file in self.defFiles:
+            req = urllib2.Request(self.url+file,None,self.headers)
             try:
                 urllib2.urlopen(req)
-                msg = "[*] Info Disclosure: " +self.url+file; print msg
-                if output : report.WriteTextFile(msg)
+                self.defFilesFound.append(self.url+file)
             except urllib2.HTTPError, e:
                 #print e.code
                 pass
-    
+        for file in self.defFiles:
+            msg = "\t"+self.url+file; print msg
+            if output : report.WriteTextFile(msg)
+
+            
     def JooFeed(self):
         try:
             htmltext = urllib2.urlopen(self.url+'/?format=feed').read()
@@ -656,6 +670,7 @@ class DruScan:
         self.DruViews()
         self.DruBlog()
         self.DefaultFiles()
+        GenericChecks(self.url).CommonFiles()
         # === Takes Long ===
         BruteForcer(self.url,self.usernames,self.weakpsw).Drurun()
         self.DruForgottenPassword()
@@ -693,15 +708,17 @@ class DruScan:
             req = urllib2.Request(self.url+"/sites/default/settings"+file)
             try:
                 urllib2.urlopen(req)
-                msg = "[*] Configuration File Found: " +self.url+"/sites/default/settings"+file; print msg
+                msg = "[*] Configuration File Found: " +self.url+"/sites/default/settings"+file; print_red(msg)
                 if output : report.WriteTextFile(msg)
             except urllib2.HTTPError, e:
                 #print e.code
                 pass   
            
     def DefaultFiles(self):
-        defFiles=['/README.txt',
-                  '/robots.txt',
+        self.defFilesFound = []
+        msg = "[-] Drupal Default Files: "; print msg
+        if output : report.WriteTextFile(msg)
+        self.defFiles=['/README.txt',
                   '/INSTALL.mysql.txt',
                   '/MAINTAINERS.txt',
                   '/profiles/standard/translations/README.txt',
@@ -733,16 +750,17 @@ class DruScan:
                   '/modules/color/preview.html',
                   '/themes/bartik/color/preview.html'
                   ]
-        
-        for file in defFiles:
-            req = urllib2.Request(self.url+file)
+        for file in self.defFiles:
+            req = urllib2.Request(self.url+file,None,self.headers)
             try:
                 urllib2.urlopen(req)
-                msg =  "[*] Info Disclosure: " +self.url+file; print msg
-                if output : report.WriteTextFile(msg)
+                self.defFilesFound.append(self.url+file)
             except urllib2.HTTPError, e:
                 #print e.code
                 pass
+        for file in self.defFiles:
+            msg = "\t"+self.url+file; print msg
+            if output : report.WriteTextFile(msg)
 
     def DruViews(self):
         self.views = "/?q=admin/views/ajax/autocomplete/user/"
@@ -1065,8 +1083,9 @@ class PostExploit:
         cookieJar.clear()
         try: 
             # Login in WordPress - HTTP Post
-            if verbose : msg ="[-] Logining on the target website ..."; print msg
-            if output : report.WriteTextFile(msg)
+            if verbose : 
+                msg ="[-] Logining on the target website ..."; print msg
+                if output : report.WriteTextFile(msg)
             opener.open(self.url+self.wplogin, urllib.urlencode(self.query_args_login))
             # Request WordPress Plugin Upload page
             htmltext = opener.open(self.url+self.wppluginpage).read()
@@ -1149,8 +1168,9 @@ class PostExploit:
         cookieJar.clear()
         try:
             # HTTP POST Request
-            if verbose : msg="[-] Logging into the target website ..."; print msg
-            if output : report.WriteTextFile(msg)
+            if verbose : 
+                msg="[-] Logging into the target website ..."; print msg
+                if output : report.WriteTextFile(msg)
             # Get Token and Session Cookie
             htmltext = opener.open(self.url+self.joologin).read()
             reg = re.compile('<input type="hidden" name="([a-zA-z0-9]{32})" value="1"')
@@ -1266,8 +1286,9 @@ class PostExploit:
         cookieJar.clear()        
         try:
             # HTTP POST Request
-            if verbose : msg = "[-] Logging into the target website..."; print msg
-            if output : report.WriteTextFile(msg)
+            if verbose : 
+                msg = "[-] Logging into the target website..."; print msg
+                if output : report.WriteTextFile(msg)
             # Logging into the website with username and password
             self.query_args_login = {"name": user ,"pass": password, "form_id":"user_login"}
             data = urllib.urlencode(self.query_args_login)
@@ -1295,13 +1316,12 @@ class PostExploit:
             # print e.code
             pass
 
-      
-        
 class GenericChecks:
     def __init__(self,url):
         self.url = url
         self.agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
         self.headers={'User-Agent':self.agent,}
+        self.widgets = ['Progress: ', progressbar.Percentage(), ' ', progressbar.Bar(marker=progressbar.RotatingMarker()),' ', progressbar.ETA(), ' ', progressbar.FileTransferSpeed()]
         # autocompletation
         # clear text : http or https
         # directory listing 
@@ -1347,6 +1367,29 @@ class GenericChecks:
         except urllib2.HTTPError, e:
             #print e.code
             pass
+
+    def CommonFiles(self):
+        msg = "[-] Interesting Directories/Files ... "; print msg
+        if output : report.WriteTextFile(msg)
+        self.commFiles = [line.strip() for line in open('common_files.txt')]
+        self.commExt=['.txt', '.php', '.old', '.bak', '/' ]
+        self.pbar = progressbar.ProgressBar(widgets=self.widgets, maxval=(len(self.commFiles)*(len(self.commExt)))).start()
+        self.interFiles = []
+        for i,ext in enumerate(self.commExt):          
+            for r,file in enumerate(self.commFiles):
+                #print self.url+"/"+file+ext
+                req = urllib2.Request(self.url+"/"+file+ext,None,self.headers)
+                self.pbar.update((i*len(self.commFiles))+r+1)
+                try:
+                    urllib2.urlopen(req)
+                    self.interFiles.append(self.url+"/"+file+ext)
+                except urllib2.HTTPError, e:
+                    #print e.code
+                    pass
+        for file in self.interFiles:
+            msg = "\t"+file; print msg
+            if output : report.WriteTextFile(msg)
+        self.pbar.finish()
 
 class Report:
     def __init__(self,fn):
