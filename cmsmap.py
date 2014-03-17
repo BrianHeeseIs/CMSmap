@@ -200,9 +200,12 @@ class Scanner:
                     #print e.code
                     msg = "[!] Drupal Config File Not Found: "+self.url+"/sites/default/settings.php"; print_red(msg)
                     if output : report.WriteTextFile(msg)
-                    msg = "[-] Probably you are the wrong web directory"; print_red(msg)
+                    msg = "[-] Probably you are scanning the wrong web directory"; print_red(msg)
                     if output : report.WriteTextFile(msg)
                     sys.exit()
+            else:
+                msg = "[-] CMS site Not Found: Probably you are scanning the wrong web directory"; print_red(msg)
+                if output : report.WriteTextFile(msg)
                 
         except urllib2.URLError, e:
             print_red("[!] Website Unreachable: "+self.url)

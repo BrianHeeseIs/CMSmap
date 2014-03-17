@@ -1,7 +1,10 @@
 + Force Update plugin lists after a certain amount of time
 + Check for writable templates
 + Double check against CMS installation in different languages 
-+ Core System Vulnerabilities i.e: http://xforce.iss.net/xforce/xfdb/91072 
++ Core System Vulnerabilities i.e: http://xforce.iss.net/xforce/xfdb/91072
 + Off-line passwords brute-forcing
++ Username as password
++ -out file
++ redirection joomla
 
  
