@@ -553,7 +553,7 @@ class JooScan:
     
     def JooDefaultFiles(self):
         self.defFilesFound = []
-        msg = "[-] Joomla Default Files: "
+        msg = "[-] Joomla Default Files: "; print msg
         if output : report.WriteTextFile(msg)
         # Check for default files
         self.defFiles=['/README.txt',
