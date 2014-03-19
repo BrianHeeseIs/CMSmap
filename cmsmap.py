@@ -217,6 +217,8 @@ class WPScan:
         self.agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
         self.headers={'User-Agent':self.agent,}
         self.url = url
+        self.currentVer = None
+        self.latestVer = None
         self.queue_num = 5
         self.thread_num = threads
         self.pluginPath = "/wp-content/plugins/"
@@ -274,7 +276,8 @@ class WPScan:
         except urllib2.HTTPError, e:
             req = urllib2.Request(self.url,None,self.headers)
             htmltext = urllib2.urlopen(req).read()
-            if re.findall('<meta name="generator" content="WordPress (\d+\.\d+[\.\d+]*)"', htmltext):
+            version = re.findall('<meta name="generator" content="WordPress (\d+\.\d+[\.\d+]*)"', htmltext)
+            if version:
                 msg = "[*] Wordpress Version: "+str(version[0]); print msg
                 if output : report.WriteTextFile(msg)
 
@@ -870,6 +873,29 @@ class ExploitDBSearch:
         self.cmstype = cmstype
         self.agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
         self.headers={'User-Agent':self.agent,}
+        
+    def Core(self):
+        # Get this value from their classes
+        self.latestVer = "3.8.1"
+        self.currentVer = "3.7"
+        self.latestVer.split(".")
+        
+        for dec in len(self.latestVer.split(".")):
+            for i in range(0,9-int(self.latestVer.split(".")[dec])):
+                print self.latestVer.split(".")+i+int(self.latestVer.split(".")[dec])
+        
+        msg = "[-] Searching Core Vulnerabilities from ExploitDB website ..." ; print msg
+        if output : report.WriteTextFile(msg)
+        for plugin in self.query:
+            htmltext = urllib2.urlopen("http://www.exploit-db.com/search/?action=search&filter_description="+self.cmstype+"&filter_exploit_text="+plugin).read()
+            regex = '/download/(.+?)">'
+            pattern =  re.compile(regex)
+            ExploitID = re.findall(pattern,htmltext)
+            msg =  plugin; print msg
+            if output : report.WriteTextFile(msg)
+            for Eid in ExploitID:
+                msg = "\t[*] Vulnerable Plugin Found: http://www.exploit-db.com/exploits/"+Eid; print_yellow(msg)
+                if output : report.WriteTextFile(msg)
         
     def Plugins(self):
         msg = "[-] Searching Vulnerable Plugins from ExploitDB website ..." ; print msg
