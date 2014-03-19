@@ -425,7 +425,7 @@ class WPScan:
         q = Queue.Queue(self.queue_num)        
         # Spawn all threads into code
         for u in range(self.thread_num):
-            t = ThreadScanner(self.url,self.pluginPath,self.pluginsFound,self.notExistingCode,q)
+            t = ThreadScanner(self.url,self.pluginPath,"/",self.pluginsFound,self.notExistingCode,q)
             t.daemon = True
             t.start()
         # Add all plugins to the queue
@@ -443,7 +443,7 @@ class WPScan:
         q = Queue.Queue(self.queue_num)        
         # Spawn all threads into code
         for u in range(self.thread_num):
-            t = ThreadScanner(self.url,"/",self.timthumbsFound,self.notExistingCode,q)
+            t = ThreadScanner(self.url,"/","/",self.timthumbsFound,self.notExistingCode,q)
             t.daemon = True
             t.start()
         # Add all plugins to the queue
@@ -469,7 +469,7 @@ class WPScan:
         q = Queue.Queue(self.queue_num)
         # Spawn all threads into code
         for u in range(self.thread_num):
-            t = ThreadScanner(self.url,self.themePath,self.themesFound,self.notExistingCode,q)
+            t = ThreadScanner(self.url,self.themePath,"/",self.themesFound,self.notExistingCode,q)
             t.daemon = True
             t.start()                
         # Add all theme to the queue
@@ -639,7 +639,7 @@ class JooScan:
         q = Queue.Queue(self.queue_num)        
         # Spawn all threads into code
         for u in range(self.thread_num):
-            t = ThreadScanner(self.url,self.pluginPath,self.pluginsFound,self.notExistingCode,q)
+            t = ThreadScanner(self.url,self.pluginPath,"/",self.pluginsFound,self.notExistingCode,q)
             t.daemon = True
             t.start()
         # Add all plugins to the queue
@@ -856,7 +856,7 @@ class DruScan:
         q = Queue.Queue(self.queue_num)
         # Spawn all threads into code
         for u in range(self.thread_num):
-            t = ThreadScanner(self.url,self.pluginPath,self.pluginsFound,self.notExistingCode,q)
+            t = ThreadScanner(self.url,self.pluginPath,"/",self.pluginsFound,self.notExistingCode,q)
             t.daemon = True
             t.start()
         # Add all plugins to the queue
@@ -931,12 +931,13 @@ class NoRedirects(urllib2.HTTPRedirectHandler):
         
 class ThreadScanner(threading.Thread):
     # Multi-threading Scan Class (just for Wordpress for now) 
-    def __init__(self,url,pluginPath,pluginsFound,notExistingCode,q):
+    def __init__(self,url,pluginPath,pluginPathEnd,pluginsFound,notExistingCode,q):
         threading.Thread.__init__ (self)
         self.url = url
         self.q = q
         self.pluginPath = pluginPath
         self.pluginsFound = pluginsFound
+        self.pluginPathEnd = pluginPathEnd
         self.notExistingCode = notExistingCode
         self.agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
         self.headers={'User-Agent':self.agent,'Accept-Encoding': None,}
@@ -945,7 +946,7 @@ class ThreadScanner(threading.Thread):
         while True:
             # Get plugin from plugin queue
             plugin = self.q.get()
-            req = urllib2.Request(self.url+self.pluginPath+plugin+"/",None, self.headers)
+            req = urllib2.Request(self.url+self.pluginPath+plugin+self.pluginPathEnd,None,self.headers)
             noRedirOpener = urllib2.build_opener(NoRedirects())        
             try:
                 noRedirOpener.open(req); self.pluginsFound.append(plugin)
@@ -1350,6 +1351,9 @@ class GenericChecks:
         self.agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
         self.headers={'User-Agent':self.agent,}
         self.widgets = ['Progress: ', progressbar.Percentage(), ' ', progressbar.Bar(marker=progressbar.RotatingMarker()),' ', progressbar.ETA(), ' ', progressbar.FileTransferSpeed()]
+        self.notExistingCode = 404
+        self.queue_num = 5
+        self.thread_num = 5
         # autocompletation
         # clear text : http or https
         # directory listing 
@@ -1401,21 +1405,26 @@ class GenericChecks:
         if output : report.WriteTextFile(msg)
         self.commFiles = [line.strip() for line in open('common_files.txt')]
         self.commExt=['.txt', '.php', '.old', '.bak', '/' ]
-        self.pbar = progressbar.ProgressBar(widgets=self.widgets, maxval=(len(self.commFiles)*(len(self.commExt)))).start()
+        self.pbar = progressbar.ProgressBar(widgets=self.widgets, maxval=(len(self.commFiles)*len(self.commExt))).start()
         self.interFiles = []
-        for i,ext in enumerate(self.commExt):          
-            for r,file in enumerate(self.commFiles):
-                #print self.url+"/"+file+ext
-                req = urllib2.Request(self.url+"/"+file+ext,None,self.headers)
-                self.pbar.update((i*len(self.commFiles))+r+1)
-                try:
-                    urllib2.urlopen(req)
-                    self.interFiles.append(self.url+"/"+file+ext)
-                except urllib2.HTTPError, e:
-                    #print e.code
-                    pass
+        # Create Code
+        q = Queue.Queue(self.queue_num)        
+        # Spawn all threads into code
+        for u in range(self.thread_num):
+            t = ThreadScanner(self.url,"/","",self.interFiles,self.notExistingCode,q)
+            t.daemon = True
+            t.start()
+            
+        for extIndex,ext in enumerate(self.commExt): 
+        # Add all plugins to the queue
+            for commFilesIndex,file in enumerate(self.commFiles):
+                q.put(file+ext)
+                self.pbar.update((len(self.commFiles)*extIndex)+commFilesIndex)   
+            q.join()
+        self.pbar.finish()       
+
         for file in self.interFiles:
-            msg = "\t"+file; print msg
+            msg = "\t"+self.url+"/"+file; print msg
             if output : report.WriteTextFile(msg)
         self.pbar.finish()
 
