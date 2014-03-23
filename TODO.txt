@@ -8,4 +8,8 @@ for instance my version is 2.5.1.. search for 2.5.2, 2.5.3, 2.5.4 till the lates
 + Common paths and files such as test.php, info.php, /phpMyAdmin/
 + check registration pages
 + Joomla Forgotten Password functionality 
+
+https://codex.wordpress.org/WordPress_Versions
+https://drupal.org/project/usage/drupal
+http://joomlacode.org/gf/project/joomla/frs/
  

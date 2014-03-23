@@ -1,4 +1,4 @@
-CMSmap is (C) 2013-2014 Mike Manzotti.
+CMSmap is (C) 2013-2014 Mike Manzotti @ Dionach Ltd.
 
 This program is free software; you may redistribute and/or modify it under 
 the terms of the GNU General Public License as published by the Free Software Foundation, 

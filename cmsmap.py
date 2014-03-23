@@ -249,7 +249,7 @@ class WPScan:
         self.WPHello()
         self.WPFeed()
         self.WPAuthor()
-        BruteForcer(self.url,self.usernames,self.weakpsw).WPrun()
+        #BruteForcer(self.url,self.usernames,self.weakpsw).WPrun()
         self.WPForgottenPassword()
         GenericChecks(self.url).AutocompleteOff('/wp-login.php')
         self.WPDefaultFiles()
@@ -1404,7 +1404,7 @@ class GenericChecks:
         msg = "[-] Interesting Directories/Files ... "; print msg
         if output : report.WriteTextFile(msg)
         self.commFiles = [line.strip() for line in open('common_files.txt')]
-        self.commExt=['.txt', '.php', '.old', '.bak', '/' ]
+        self.commExt=['.txt', '.php', '/' ]
         self.pbar = progressbar.ProgressBar(widgets=self.widgets, maxval=(len(self.commFiles)*len(self.commExt))).start()
         self.interFiles = []
         # Create Code
