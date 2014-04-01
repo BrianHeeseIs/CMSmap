@@ -268,7 +268,7 @@ class WPScan:
         try:
             req = urllib2.Request(self.url+'/readme.html',None,self.headers)
             htmltext = urllib2.urlopen(req).read()
-            regex = '<br /> Version[e]* (\d+\.\d+[\.\d+]*)'
+            regex = '<br />[ ]*Version[e]* (\d+\.\d+[\.\d+]*)'
             pattern =  re.compile(regex)
             version = re.findall(pattern,htmltext)
             msg = "[*] Wordpress Version: "+str(version[0]); print msg
