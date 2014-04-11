@@ -235,16 +235,14 @@ class WPScan:
         self.notExistingCode = 404
         self.confFiles=['','.php~','.php.txt','.php.old','.php_old','.php-old','.php.save','.php.swp','.php.swo','.php_bak','.php-bak','.php.original','.php.old','.php.orig','.php.bak','.save','.old','.bak','.orig','.original','.txt']
         self.plugins = [line.strip() for line in open('wp_plugins.txt')]
+        self.versions = [line.strip() for line in open('wp_versions.txt')]
         self.themes = [line.strip() for line in open('wp_themes.txt')]
         self.timthumbs = [line.strip() for line in open('wp_timthumbs.txt')]
         self.widgets = ['Progress: ', progressbar.Percentage(), ' ', progressbar.Bar(marker=progressbar.RotatingMarker()),' ', progressbar.ETA(), ' ', progressbar.FileTransferSpeed()]
 
     def WPrun(self):
         self.WPVersion()
-        self.theme = self.WPCurrentTheme()
-        msg = "[*] Wordpress Theme: "+self.theme ; print msg
-        if output : report.WriteTextFile(msg)
-        ExploitDBSearch(self.url, 'Wordpress', [self.theme]).Themes()
+        self.WPCurrentTheme()
         self.WPConfigFiles()
         self.WPHello()
         self.WPFeed()
@@ -270,16 +268,25 @@ class WPScan:
             htmltext = urllib2.urlopen(req).read()
             regex = '<br />[ ]*Version[e]* (\d+\.\d+[\.\d+]*)'
             pattern =  re.compile(regex)
-            version = re.findall(pattern,htmltext)
-            msg = "[*] Wordpress Version: "+str(version[0]); print msg
-            if output : report.WriteTextFile(msg)
-        except urllib2.HTTPError, e:
-            req = urllib2.Request(self.url,None,self.headers)
-            htmltext = urllib2.urlopen(req).read()
-            version = re.findall('<meta name="generator" content="WordPress (\d+\.\d+[\.\d+]*)"', htmltext)
+            version = re.findall(pattern,htmltext)[0]
             if version:
-                msg = "[*] Wordpress Version: "+str(version[0]); print msg
+                msg = "[*] Wordpress Version: "+version; print msg
                 if output : report.WriteTextFile(msg)
+            else:
+                req = urllib2.Request(self.url,None,self.headers)
+                htmltext = urllib2.urlopen(req).read()
+                version = re.findall('<meta name="generator" content="WordPress (\d+\.\d+[\.\d+]*)"', htmltext)
+                if version:
+                    msg = "[*] Wordpress Version: "+version; print msg
+                    if output : report.WriteTextFile(msg)
+            if version :
+                for ver in self.versions:
+                    ExploitDBSearch(self.url, 'Wordpress', ver).Core()
+                    if ver == version:
+                        break        
+        except urllib2.HTTPError, e:
+            #print e.code
+            pass
 
     def WPCurrentTheme(self):
         try:
@@ -287,8 +294,11 @@ class WPScan:
             htmltext = urllib2.urlopen(req).read()
             regex = '/wp-content/themes/(.+?)/'
             pattern =  re.compile(regex)
-            version = re.findall(pattern,htmltext)
-            return str(version[0])        
+            version = re.findall(pattern,htmltext)[0]
+            if version:
+                msg = "[*] Wordpress Theme: "+version ; print msg
+                if output : report.WriteTextFile(msg)
+                ExploitDBSearch(self.url, 'Wordpress', [version]).Themes()
         except urllib2.HTTPError, e:
             #print e.code
             pass
@@ -497,6 +507,7 @@ class JooScan:
         self.weakpsw = ['password', 'admin','123456','abc123','qwerty']
         self.confFiles=['','.php~','.php.txt','.php.old','.php_old','.php-old','.php.save','.php.swp','.php.swo','.php_bak','.php-bak','.php.original','.php.old','.php.orig','.php.bak','.save','.old','.bak','.orig','.original','.txt']
         self.plugins = [line.strip() for line in open('joomla_plugins.txt')]
+        self.versions = [line.strip() for line in open('joomla_versions.txt')]
         self.widgets = ['Progress: ', progressbar.Percentage(), ' ', progressbar.Bar(marker=progressbar.RotatingMarker()),' ', progressbar.ETA(), ' ', progressbar.FileTransferSpeed()]
 
     def Joorun(self):
@@ -518,9 +529,14 @@ class JooScan:
             htmltext = urllib2.urlopen(self.url+'/joomla.xml').read()
             regex = '<version>(.+?)</version>'
             pattern =  re.compile(regex)
-            version = re.findall(pattern,htmltext)
-            msg = "[*] Joomla Version: "+str(version[0]); print msg
-            if output : report.WriteTextFile(msg)
+            version = re.findall(pattern,htmltext)[0]
+            if version:
+                msg = "[*] Joomla Version: "+version; print msg
+                if output : report.WriteTextFile(msg)
+                for ver in self.versions:
+                    ExploitDBSearch(self.url, 'Joomla', ver).Core()
+                    if ver == version:
+                        break 
         except urllib2.HTTPError, e:
             #print e.code
             pass
@@ -662,6 +678,7 @@ class DruScan:
         self.forgottenPsw = "/?q=user/password"
         self.weakpsw = ['password', 'admin','123456','abc123','qwerty']
         self.plugins = [line.strip() for line in open('drupal_plugins.txt')]
+        self.versions = [line.strip() for line in open('drupal_versions.txt')]
         self.confFiles=['','.php~','.php.txt','.php.old','.php_old','.php-old','.php.save','.php.swp','.php.swo','.php_bak','.php-bak','.php.original','.php.old','.php.orig','.php.bak','.save','.old','.bak','.orig','.original','.txt']
         self.usernames = []
         self.pluginsFound = []
@@ -689,9 +706,14 @@ class DruScan:
             htmltext = urllib2.urlopen(self.url+'/CHANGELOG.txt').read()
             regex = 'Drupal (\d+\.\d+),'
             pattern =  re.compile(regex)
-            version = re.findall(pattern,htmltext)
-            msg = "[*] Drupal Version: "+str(version[0]); print msg
-            if output : report.WriteTextFile(msg)
+            version = re.findall(pattern,htmltext)[0]
+            if version:
+                msg = "[*] Drupal Version: "+version; print msg
+                if output : report.WriteTextFile(msg)
+                for ver in self.versions:
+                    ExploitDBSearch(self.url, 'Drupal', ver).Core()
+                    if ver == version:
+                        break 
         except urllib2.HTTPError, e:
             #print e.code
             pass
@@ -876,26 +898,16 @@ class ExploitDBSearch:
         
     def Core(self):
         # Get this value from their classes
-        self.latestVer = "3.8.1"
-        self.currentVer = "3.7"
-        self.latestVer.split(".")
-        
-        for dec in len(self.latestVer.split(".")):
-            for i in range(0,9-int(self.latestVer.split(".")[dec])):
-                print self.latestVer.split(".")+i+int(self.latestVer.split(".")[dec])
-        
-        msg = "[-] Searching Core Vulnerabilities from ExploitDB website ..." ; print msg
-        if output : report.WriteTextFile(msg)
-        for plugin in self.query:
-            htmltext = urllib2.urlopen("http://www.exploit-db.com/search/?action=search&filter_description="+self.cmstype+"&filter_exploit_text="+plugin).read()
-            regex = '/download/(.+?)">'
-            pattern =  re.compile(regex)
-            ExploitID = re.findall(pattern,htmltext)
-            msg =  plugin; print msg
+        if verbose:      
+            msg = "[-] Searching Core Vulnerabilities for version "+self.query ; print msg
             if output : report.WriteTextFile(msg)
-            for Eid in ExploitID:
-                msg = "\t[*] Vulnerable Plugin Found: http://www.exploit-db.com/exploits/"+Eid; print_yellow(msg)
-                if output : report.WriteTextFile(msg)
+        htmltext = urllib2.urlopen("http://www.exploit-db.com/search/?action=search&filter_description="+self.cmstype+"+"+self.query).read()
+        regex = '/download/(.+?)">'
+        pattern =  re.compile(regex)
+        ExploitID = re.findall(pattern,htmltext)
+        for Eid in ExploitID:
+            msg = "[*] Vulnerable Core Version "+self.query+" Found: http://www.exploit-db.com/exploits/"+Eid; print_yellow(msg)
+            if output : report.WriteTextFile(msg)
         
     def Plugins(self):
         msg = "[-] Searching Vulnerable Plugins from ExploitDB website ..." ; print msg
@@ -1113,7 +1125,7 @@ class PostExploit:
         try: 
             # Login in WordPress - HTTP Post
             if verbose : 
-                msg ="[-] Logining on the target website ..."; print msg
+                msg ="[-] Logging in on the target website ..."; print msg
                 if output : report.WriteTextFile(msg)
             opener.open(self.url+self.wplogin, urllib.urlencode(self.query_args_login))
             # Request WordPress Plugin Upload page
@@ -1150,7 +1162,7 @@ class PostExploit:
         
         try:
             # HTTP POST Request
-            if verbose : print "[-] Logining on the target website ..."
+            if verbose : print "[-] Logging in on the target website ..."
             opener.open(self.url+self.wplogin, urllib.urlencode(self.query_args_login))
             
             if verbose : print "[-] Looking for Theme Editor Page on the target website ..."
@@ -1244,12 +1256,12 @@ class PostExploit:
         
         try:
             # HTTP POST Request
-            if verbose : print "[-] Logining on the target website ..."
+            if verbose : print "[-] logging in on the target website ..."
             # Get Token and Session Cookie
             htmltext = opener.open(self.url+self.joologin).read()
             reg = re.compile('<input type="hidden" name="([a-zA-z0-9]{32})" value="1"')
             token = reg.search(htmltext).group(1)            
-            # Logining on the website with username and password
+            # logging in on the website with username and password
             query_args = {"username": user ,"passwd": password, "option":"com_login","task":"login",token:"1"}
             data = urllib.urlencode(query_args)
             htmltext = opener.open(self.url+self.joologin, data).read()
