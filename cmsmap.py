@@ -1470,7 +1470,7 @@ def usage(version):
           -T, --threads   number of threads (Default: 5)
           -u, --usr       username or file 
           -p, --psw       password or file
-          -o, --out       save output in a file
+          -o, --output    save output in a file
           -U, --update    update CMSmap to the latest version
           -h, --help      show this help
           """
@@ -1481,7 +1481,7 @@ if __name__ == "__main__":
     # command line arguments
     if sys.argv[1:]:
         try:
-            optlist, args = getopt.getopt(sys.argv[1:], 't:u:p:T:o:vhU', ["target", "verbose","help","usr","psw","out","threads","update"])
+            optlist, args = getopt.getopt(sys.argv[1:], 't:u:p:T:o:vhU', ["target=", "verbose","help","usr=","psw=","output=","threads=","update"])
         except getopt.GetoptError as err:
             # print help information and exit:
             print(err) # print something like "option -a not recognized"
@@ -1491,7 +1491,7 @@ if __name__ == "__main__":
             if o == "-h":
                 usage(version)
                 sys.exit()
-            elif o in ("-t", "--url"):
+            elif o in ("-t", "--target"):
                 url = a
                 pUrl = urlparse.urlparse(url)
                 #clean up supplied URLs
@@ -1511,7 +1511,7 @@ if __name__ == "__main__":
                 print "[-] Threads Set : "+str(threads)
             elif o in("-v", "--verbose"):
                 verbose = True
-            elif o in("-o", "--out"):
+            elif o in("-o", "--output"):
                 output = True
                 report = Report(a)
             elif o in("-U", "--update"):
