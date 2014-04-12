@@ -64,6 +64,7 @@ ProgressBar
 + Generic Checks
 Directory Listing
 HTTPS Check
+HTTP Headers Check
 Autocomplete Off Check
 Robots.txt Check
 Save Output to a TXT file
