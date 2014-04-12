@@ -1379,7 +1379,7 @@ class PostExploit:
         for hashpsw in [line.strip() for line in open(hashfile)]:
             if len(hashpsw) == 34 : self.WPCrackHashes(); break
             elif len(hashpsw) == 65 : self.JooCrackHashes(); break
-            else: print "[!] No Password Hashes Found in: "+self.hashfile
+            else: print "[!] No Valid Password Hash: "+hashpsw
         
     def WPCrackHashes(self):     
         # hashcat -m 400 -a 0 -o cracked.txt hashes.txt passw.txt
@@ -1568,12 +1568,13 @@ def usage(version):
           -p, --psw       password or file
           -o, --output    save output in a file
           -k, --crack     password hashes file
-          -w, --wordlist  wordlist file (Default: rockyou.txt - WordPress only)
+          -w, --wordlist  wordlist file (Default: rockyou.txt - WordPress and Joomla only)
           -U, --update    update CMSmap to the latest version
           -h, --help      show this help
           """
     print "Example: "+ os.path.basename(sys.argv[0]) +" -t https://example.com"
     print "         "+ os.path.basename(sys.argv[0]) +" -t https://example.com -u admin -p passwords.txt"
+    print "         "+ os.path.basename(sys.argv[0]) +" -k hashes.txt"
     
 if __name__ == "__main__":
     # command line arguments

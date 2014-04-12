@@ -23,17 +23,20 @@ Usage
 	CMSmap tool v0.3 - Simple CMS Scanner
 	Author: Mike Manzotti mike.manzotti@dionach.com
 	Usage: cmsmap.py -t <URL>
-	          -t, --target      target URL (e.g. 'https://abc.test.com:8080/')
-	          -v, --verbose  verbose mode (Default: false)
-	          -T, --threads  number of threads (Default: 5)
-	          -u, --usr      username or file 
-	          -p, --psw      password or file
-	          -o, --output   save output in a file
-	          -U, --update   update CMSmap to the latest version
-	          -h, --help 
+	          -t, --target    target URL (e.g. 'https://abc.test.com:8080/')
+	          -v, --verbose   verbose mode (Default: false)
+	          -T, --threads   number of threads (Default: 5)
+	          -u, --usr       username or file 
+	          -p, --psw       password or file
+	          -o, --output    save output in a file
+	          -k, --crack     password hashes file
+	          -w, --wordlist  wordlist file (Default: rockyou.txt - WordPress only)
+	          -U, --update    update CMSmap to the latest version
+	          -h, --help      show this help
 	          
 	Example: cmsmap.py -t https://example.com
 	         cmsmap.py -t https://example.com -u admin -p passwords.txt
+	         cmsmap.py -k hashes.txt
 
 
 Disclaimer
