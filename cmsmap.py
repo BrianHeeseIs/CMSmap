@@ -1378,8 +1378,7 @@ class PostExploit:
         # hashcat -m 400 -a 0 -o cracked.txt hashes.txt passw.txt
         print "[-] Cracking WordPress Hashes in: "+hashfile+" ... "
         process = os.system("hashcat -m 400 -a -o cracked.txt "+hashfile+" "+self.wordlist)
-        if process == 0 : success = True
-        if success :
+        if process == 0 :
             print "[-] Cracked Passwords saved in: cracked.txt"
         else :
             print "[!] Cracking could not be completed. Please install hashcat: http://hashcat.net/"
@@ -1533,7 +1532,7 @@ def usage(version):
           -u, --usr       username or file 
           -p, --psw       password or file
           -o, --output    save output in a file
-          -k, --crack     hashed passwords file
+          -k, --crack     password hashes file
           -w, --wordlist  wordlist file (Default: rockyou.txt)
           -U, --update    update CMSmap to the latest version
           -h, --help      show this help
