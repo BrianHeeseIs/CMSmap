@@ -1466,7 +1466,7 @@ class GenericChecks:
                 msg = "Strict-Transport-Security"; print msg
                 if output : report.WriteTextFile(msg)
             if not response.info().getheader('x-content-security-policy'):
-                msg = "X-Content-Security-Policy Not Enforced"; print msg
+                msg = "X-Content-Security-Policy"; print msg
                 if output : report.WriteTextFile(msg)
         except urllib2.HTTPError, e:
             #print e.code
