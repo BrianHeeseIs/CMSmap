@@ -1,6 +1,6 @@
 #!/usr/bin/python
-import smtplib, base64, os, sys, getopt, urllib2, urllib, re, socket, time, httplib
-import itertools, urlparse, threading, Queue, multiprocessing, cookielib, datetime
+import smtplib, base64, os, sys, getopt, urllib2, urllib, re, socket, time, httplib, tarfile
+import itertools, urlparse, threading, Queue, multiprocessing, cookielib, datetime, zipfile
 from thirdparty.multipart import multipartpost
 from thirdparty.termcolor.termcolor import cprint,colored
 from thirdparty.progressbar import progressbar
@@ -1125,7 +1125,6 @@ class BruteForcer:
 class PostExploit:
     def __init__(self,url):
         self.url = url
-        self.wordlist = 'rockyou.txt'
         
     def WPShell(self,user,password):
         self.wplogin = "/wp-login.php"
@@ -1375,6 +1374,7 @@ class PostExploit:
     
     def WPCrackHashes(self,hashfile,wordlist):
         self.wordlist = wordlist
+        if not os.path.isfile('wordlist/rockyou.txt'): self.ExtractFile('wordlist/rockyou.zip')
         # hashcat -m 400 -a 0 -o cracked.txt hashes.txt passw.txt
         print "[-] Cracking WordPress Hashes in: "+hashfile+" ... "
         process = os.system("hashcat -m 400 -a 0 -o cracked.txt "+hashfile+" "+self.wordlist)
@@ -1382,6 +1382,24 @@ class PostExploit:
             print "[-] Cracked Passwords saved in: cracked.txt"
         else :
             print "[!] Cracking could not be completed. Please install hashcat: http://hashcat.net/"
+
+    def ExtractFile(self, path, to_directory='.'):
+        if path.endswith('.zip'):
+            opener, mode = zipfile.ZipFile, 'r'
+        elif path.endswith('.tar.gz') or path.endswith('.tgz'):
+            opener, mode = tarfile.open, 'r:gz'
+        elif path.endswith('.tar.bz2') or path.endswith('.tbz'):
+            opener, mode = tarfile.open, 'r:bz2'
+        else: 
+            raise ValueError, "Could not extract `%s` as no appropriate extractor is found" % path
+        cwd = os.getcwd()
+        os.chdir(to_directory)
+        try:
+            file = opener(path, mode)
+            try: file.extractall()
+            finally: file.close()
+        finally:
+            os.chdir(cwd)
 
 class GenericChecks:
     def __init__(self,url):
@@ -1511,6 +1529,7 @@ BruteForcingAttack = False
 CrackingPasswords = False
 output = False
 threads = 5
+wordlist = 'wordlist/rockyou.txt'
 print_red = lambda x: cprint(x, 'red', None, file=sys.stderr)
 print_red_bold = lambda x: cprint(x, 'red', attrs=['bold'], file=sys.stderr)
 print_grey = lambda x: cprint(x, 'grey', None, file=sys.stderr)
@@ -1611,7 +1630,7 @@ if __name__ == "__main__":
     elif BruteForcingAttack :
         BruteForcer(url,usrlist,pswlist).FindCMSType()
     elif CrackingPasswords:
-        PostExploit(None).WPCrackHashes(hashfile, wordlist = 'rockyou.txt')
+        PostExploit(None).WPCrackHashes(hashfile, wordlist)
     else :
         Scanner(url,threads).FindCMSType()
     
