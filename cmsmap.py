@@ -1567,8 +1567,8 @@ def usage(version):
           -u, --usr       username or file 
           -p, --psw       password or file
           -o, --output    save output in a file
-          -k, --crack     password hashes file
-          -w, --wordlist  wordlist file (Default: rockyou.txt - WordPress and Joomla only)
+          -k, --crack     password hashes file (WordPress and Joomla only)
+          -w, --wordlist  wordlist file (Default: rockyou.txt)
           -U, --update    update CMSmap to the latest version
           -h, --help      show this help
           """
