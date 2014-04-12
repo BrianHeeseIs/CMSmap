@@ -1,7 +1,6 @@
 + Force Update plugin lists after a certain amount of time
 + Check for writable templates
 + Double check against CMS installation in different languages 
-+ Off-line passwords brute-forcing
 + Joomla Forgotten Password functionality
 + Generic checks: Search for subdomains
 
