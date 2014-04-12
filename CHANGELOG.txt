@@ -20,8 +20,9 @@ Username Enumeration Via Forgotten Password
 Low Intensive Brute Forcing (5 attempts)
 Path Disclosure Via Hello plugin
 Directories Listing
-ExploitDB Searching of Plugins
-ExploitDB Searching of Themes
+ExploitDB Searching for Core vulnerabilities
+ExploitDB Searching for Plugins
+ExploitDB Searching for Themes
 Save Output to a TXT file
 ProgressBar
 Timthumbs Detection
@@ -34,7 +35,8 @@ Default Files Detection
 Username Enumeration Via Feed
 Low Intensive Brute Forcing (5 attempts)
 Components Enumeration
-ExploitDB Searching of Components
+ExploitDB Searching for Core vulnerabilities
+ExploitDB Searching for Components
 Directories Listing
 Save Output to a TXT file
 ProgressBar
@@ -49,7 +51,8 @@ Username Enumeration via Blog Module
 Username Enumeration via Forgotten Password
 Low Intensive Brute Forcing (5 attempts)
 Modules Enumeration
-ExploitDB Searching of Modules
+ExploitDB Searching for Core vulnerabilities
+ExploitDB Searching for Modules
 Directories Listing
 Save Output to a TXT file
 ProgressBar

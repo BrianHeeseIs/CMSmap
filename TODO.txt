@@ -1,14 +1,11 @@
 + Force Update plugin lists after a certain amount of time
 + Check for writable templates
 + Double check against CMS installation in different languages 
-+ Core System Vulnerabilities i.e: http://xforce.iss.net/xforce/xfdb/91072 - search vulnerability till latest secure version 
-for instance my version is 2.5.1.. search for 2.5.2, 2.5.3, 2.5.4 till the latest version
 + Off-line passwords brute-forcing
-+ Username as password
-+ Common paths and files such as test.php, info.php, /phpMyAdmin/
-+ check registration pages
-+ Joomla Forgotten Password functionality 
++ Joomla Forgotten Password functionality
++ Search for subdomains 
 
+Notes:
 https://codex.wordpress.org/WordPress_Versions
 https://drupal.org/project/usage/drupal
 http://joomlacode.org/gf/project/joomla/frs/
