@@ -1372,31 +1372,28 @@ class PostExploit:
             # print e.code
             pass
     
-    def HashesType(self,hashfile):
-        # load 
-        pass
-        #for hashpsw in [line.strip() for line in open(hashfile)]:
-            #if not re.match(r"[\$\w\$\w+]{34,34}", hashpsw):
-            #if not re.match(r"([a-zA-Z\.\-\_1-9]+)\@([a-zA-Z\.\-\_1-9]+)\.([a-z]+)", hashpsw):
-                
-    
-    def WPCrackHashes(self,hashfile,wordlist):
+    def CrackingHashesType(self,hashfile,wordlist):
+        self.hashfile = hashfile
         self.wordlist = wordlist
         if not os.path.isfile('wordlist/rockyou.txt'): print "[-] Decompressing rockyou.zip"; self.ExtractFile('rockyou.zip', 'wordlist')
+        for hashpsw in [line.strip() for line in open(hashfile)]:
+            if len(hashpsw) == 34 : self.WPCrackHashes(); break
+            elif len(hashpsw) == 65 : self.JooCrackHashes(); break
+            else: print "[!] No Password Hashes Found in: "+self.hashfile
+        
+    def WPCrackHashes(self):     
         # hashcat -m 400 -a 0 -o cracked.txt hashes.txt passw.txt
-        print "[-] Cracking WordPress Hashes in: "+hashfile+" ... "
-        process = os.system("hashcat -m 400 -a 0 -o cracked.txt "+hashfile+" "+self.wordlist)
+        print "[-] Cracking WordPress Hashes in: "+self.hashfile+" ... "
+        process = os.system("hashcat -m 400 -a 0 -o cracked.txt "+self.hashfile+" "+self.wordlist)
         if process == 0 :
             print "[-] Cracked Passwords saved in: cracked.txt"
         else :
             print "[!] Cracking could not be completed. Please install hashcat: http://hashcat.net/"
 
-    def JooCrackHashes(self,hashfile,wordlist):
-        self.wordlist = wordlist
-        if not os.path.isfile('wordlist/rockyou.txt'): print "[-] Decompressing rockyou.zip"; self.ExtractFile('rockyou.zip', 'wordlist')
+    def JooCrackHashes(self):
         # hashcat -m 10 -a 0 -o cracked.txt hashes.txt passw.txt
-        print "[-] Cracking Joomla Hashes in: "+hashfile+" ... "
-        process = os.system("hashcat -m 10 -a 0 -o cracked.txt "+hashfile+" "+self.wordlist)
+        print "[-] Cracking Joomla Hashes in: "+self.hashfile+" ... "
+        process = os.system("hashcat -m 10 -a 0 -o cracked.txt "+self.hashfile+" "+self.wordlist)
         if process == 0 :
             print "[-] Cracked Passwords saved in: cracked.txt"
         else :
@@ -1649,7 +1646,7 @@ if __name__ == "__main__":
     elif BruteForcingAttack :
         BruteForcer(url,usrlist,pswlist).FindCMSType()
     elif CrackingPasswords:
-        PostExploit(None).WPCrackHashes(hashfile, wordlist)
+        PostExploit(None).CrackingHashesType(hashfile, wordlist)
     else :
         Scanner(url,threads).FindCMSType()
     
