@@ -346,7 +346,7 @@ class WPScan:
                 #print e.code
                 pass
         for file in self.defFiles:
-            msg = "\t"+self.url+file; print msg
+            msg = self.url+file; print msg
             if output : report.WriteTextFile(msg)
             
     def WPFeed(self):
@@ -603,7 +603,7 @@ class JooScan:
                 #print e.code
                 pass
         for file in self.defFiles:
-            msg = "\t"+self.url+file; print msg
+            msg = self.url+file; print msg
             if output : report.WriteTextFile(msg)
 
             
@@ -792,7 +792,7 @@ class DruScan:
                 #print e.code
                 pass
         for file in self.defFiles:
-            msg = "\t"+self.url+file; print msg
+            msg = self.url+file; print msg
             if output : report.WriteTextFile(msg)
 
     def DruViews(self):
@@ -928,7 +928,7 @@ class ExploitDBSearch:
             msg =  plugin; print msg
             if output : report.WriteTextFile(msg)
             for Eid in ExploitID:
-                msg = "\t[*] Vulnerable Plugin Found: http://www.exploit-db.com/exploits/"+Eid; print_yellow(msg)
+                msg = " [*] Vulnerable Plugin Found: http://www.exploit-db.com/exploits/"+Eid; print_yellow(msg)
                 if output : report.WriteTextFile(msg)
                 
     def Themes(self):
@@ -939,7 +939,7 @@ class ExploitDBSearch:
             pattern =  re.compile(regex)
             ExploitID = re.findall(pattern,htmltext)
             for Eid in ExploitID:
-                msg = "\t[*] Vulnerable Theme Found: http://www.exploit-db.com/exploits/"+Eid; print_yellow(msg)
+                msg = " [*] Vulnerable Theme Found: http://www.exploit-db.com/exploits/"+Eid; print_yellow(msg)
                 if output : report.WriteTextFile(msg)
 
 class NoRedirects(urllib2.HTTPRedirectHandler):
@@ -1125,6 +1125,7 @@ class BruteForcer:
 class PostExploit:
     def __init__(self,url):
         self.url = url
+        self.wordlist = 'rockyou.txt'
         
     def WPShell(self,user,password):
         self.wplogin = "/wp-login.php"
@@ -1371,6 +1372,17 @@ class PostExploit:
         except urllib2.HTTPError, e:
             # print e.code
             pass
+    
+    def WPCrackHashes(self,hashfile,wordlist):
+        self.wordlist = wordlist
+        # hashcat -m 400 -a 0 -o cracked.txt hashes.txt passw.txt
+        print "[-] Cracking WordPress Hashes in: "+hashfile+" ... "
+        process = os.system("hashcat -m 400 -a -o cracked.txt "+hashfile+" "+self.wordlist)
+        if process == 0 : success = True
+        if success :
+            print "[-] Cracked Passwords saved in: cracked.txt"
+        else :
+            print "[!] Cracking could not be completed. Please install hashcat: http://hashcat.net/"
 
 class GenericChecks:
     def __init__(self,url):
@@ -1473,7 +1485,7 @@ class GenericChecks:
         self.pbar.finish()       
 
         for file in self.interFiles:
-            msg = "\t"+self.url+"/"+file; print msg
+            msg = self.url+"/"+file; print msg
             if output : report.WriteTextFile(msg)
         self.pbar.finish()
 
@@ -1497,6 +1509,7 @@ version=0.3
 verbose = False
 CMSmapUpdate = False
 BruteForcingAttack = False
+CrackingPasswords = False
 output = False
 threads = 5
 print_red = lambda x: cprint(x, 'red', None, file=sys.stderr)
@@ -1520,6 +1533,8 @@ def usage(version):
           -u, --usr       username or file 
           -p, --psw       password or file
           -o, --output    save output in a file
+          -k, --crack     hashed passwords file
+          -w, --wordlist  wordlist file (Default: rockyou.txt)
           -U, --update    update CMSmap to the latest version
           -h, --help      show this help
           """
@@ -1530,7 +1545,7 @@ if __name__ == "__main__":
     # command line arguments
     if sys.argv[1:]:
         try:
-            optlist, args = getopt.getopt(sys.argv[1:], 't:u:p:T:o:vhU', ["target=", "verbose","help","usr=","psw=","output=","threads=","update"])
+            optlist, args = getopt.getopt(sys.argv[1:], 't:u:p:T:o:k:w:vhU', ["target=", "verbose","help","usr=","psw=","output=","threads=","crack=","wordlist=","update"])
         except getopt.GetoptError as err:
             # print help information and exit:
             print(err) # print something like "option -a not recognized"
@@ -1555,6 +1570,11 @@ if __name__ == "__main__":
                 BruteForcingAttack = True
             elif o in ("-p", "--psw"):
                 pswlist = a
+            elif o in ("-k", "--crack"):
+                CrackingPasswords = True
+                hashfile = a
+            elif o in ("-w", "--wordlist"):
+                wordlist = a
             elif o in ("-T", "--threads"):
                 threads = int(a)
                 print "[-] Threads Set : "+str(threads)
@@ -1591,6 +1611,8 @@ if __name__ == "__main__":
         initializer.CMSmapUpdate()
     elif BruteForcingAttack :
         BruteForcer(url,usrlist,pswlist).FindCMSType()
+    elif CrackingPasswords:
+        PostExploit(None).WPCrackHashes(hashfile, wordlist)
     else :
         Scanner(url,threads).FindCMSType()
     
@@ -1598,7 +1620,7 @@ if __name__ == "__main__":
     diffTime = end - start
     msg = "[-] Date & Time: "+time.strftime('%d/%m/%Y %H:%M:%S'); print_blue(msg)
     if output : report.WriteTextFile(msg)
-    msg = "[-] Scan Completed in: "+str(datetime.timedelta(seconds=diffTime)).split(".")[0]; print_blue(msg)
+    msg = "[-] Completed in: "+str(datetime.timedelta(seconds=diffTime)).split(".")[0]; print_blue(msg)
     if output : report.WriteTextFile(msg)
     if output: msg = "[-] Output File Saved in: "+report.fn+"\n"; print msg; report.WriteTextFile(msg)
     

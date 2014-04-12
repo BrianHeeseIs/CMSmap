@@ -4,11 +4,13 @@
 + Off-line passwords brute-forcing
 + Joomla Forgotten Password functionality
 + Generic checks: Search for subdomains
-+ Generic checks: Headers (iframe + xss) 
 
 Notes:
 https://codex.wordpress.org/WordPress_Versions
 https://drupal.org/project/usage/drupal
 http://joomlacode.org/gf/project/joomla/frs/
 http://docs.joomla.org/Joomla_1.5_version_history
- 
+
+Offline password brute-forcing:
+http://pastebin.com/raw.php?i=4xKcg9dU
+http://samsclass.info/seminars/CMS/hashcat-wordpress.htm
