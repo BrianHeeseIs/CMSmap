@@ -158,6 +158,7 @@ class Scanner:
         try:
             htmltext = urllib2.urlopen(req).read()
             GenericChecks(self.url).HTTPSCheck()
+            GenericChecks(self.url).HeadersCheck()
             GenericChecks(self.url).RobotsTXT()
             if re.search("Wordpress", htmltext,re.IGNORECASE):
                 msg = "[*] CMS Detection: Wordpress"; print msg
@@ -1403,6 +1404,28 @@ class GenericChecks:
         if scheme == 'http' : 
             msg = "[*] Website Not in HTTPS: "+self.url; print msg 
             if output : report.WriteTextFile(msg)
+
+    def HeadersCheck(self):
+        req = urllib2.Request(self.url,None,self.headers)
+        msg = "[-] HTTP Header Protections Not Enforced ..."; print msg
+        if output : report.WriteTextFile(msg)
+        try:
+            response = urllib2.urlopen(req)
+            if not (response.info().getheader('x-xss-protection') == '1; mode=block'):
+                msg = "X-XSS-Protection"; print msg
+                if output : report.WriteTextFile(msg)
+            if not (response.info().getheader('x-frame-options') == 'deny' or 'sameorigin' or 'DENY' or 'SAMEORIGIN'):
+                msg = "X-Frame-Options"; print msg
+                if output : report.WriteTextFile(msg)
+            if not response.info().getheader('strict-transport-security'):
+                msg = "Strict-Transport-Security"; print msg
+                if output : report.WriteTextFile(msg)
+            if not response.info().getheader('x-content-security-policy'):
+                msg = "X-Content-Security-Policy Not Enforced"; print msg
+                if output : report.WriteTextFile(msg)
+        except urllib2.HTTPError, e:
+            #print e.code
+            pass
 
     def AutocompleteOff(self,relPath):
         self.relPath = relPath

@@ -28,7 +28,7 @@ Usage
 	          -T, --threads  number of threads (Default: 5)
 	          -u, --usr      username or file 
 	          -p, --psw      password or file
-	          -o, --out      save output in a file
+	          -o, --output   save output in a file
 	          -U, --update   update CMSmap to the latest version
 	          -h, --help 
 	          
