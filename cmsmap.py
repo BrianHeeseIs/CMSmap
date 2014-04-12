@@ -1393,7 +1393,7 @@ class PostExploit:
 
     def JooCrackHashes(self,hashfile,wordlist):
         self.wordlist = wordlist
-        if not os.path.isfile('wordlist/rockyou.txt'): self.ExtractFile('wordlist/rockyou.zip','wordlist/rockyou.txt')
+        if not os.path.isfile('wordlist/rockyou.txt'): self.ExtractFile('rockyou.zip','wordlist')
         # hashcat -m 10 -a 0 -o cracked.txt hashes.txt passw.txt
         print "[-] Cracking Joomla Hashes in: "+hashfile+" ... "
         process = os.system("hashcat -m 10 -a 0 -o cracked.txt "+hashfile+" "+self.wordlist)
