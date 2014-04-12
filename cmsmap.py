@@ -1611,7 +1611,7 @@ if __name__ == "__main__":
     elif BruteForcingAttack :
         BruteForcer(url,usrlist,pswlist).FindCMSType()
     elif CrackingPasswords:
-        PostExploit(None).WPCrackHashes(hashfile, wordlist)
+        PostExploit(None).WPCrackHashes(hashfile, wordlist = 'rockyou.txt')
     else :
         Scanner(url,threads).FindCMSType()
     
