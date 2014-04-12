@@ -1391,7 +1391,7 @@ class GenericChecks:
             htmltext = urllib2.urlopen(req).read()
             dirList = re.search("<title>Index of", htmltext,re.IGNORECASE)
             if dirList: 
-                msg = "\t"+self.url+self.relPath ; print msg
+                msg = self.url+self.relPath ; print msg
                 if output : report.WriteTextFile(msg)
         except urllib2.HTTPError, e:
             pass
@@ -1461,7 +1461,7 @@ class Report:
         
     def WriteTextFile(self,msg):
         self.log += "\n"+msg
-        f = open(os.getcwd()+os.sep+self.fn,"w")
+        f = open(os.sep+self.fn,"w")
         f.write(self.log)
         f.close()
     

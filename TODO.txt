@@ -3,7 +3,8 @@
 + Double check against CMS installation in different languages 
 + Off-line passwords brute-forcing
 + Joomla Forgotten Password functionality
-+ Search for subdomains 
++ Generic checks: Search for subdomains
++ Generic checks: Headers (iframe + xss) 
 
 Notes:
 https://codex.wordpress.org/WordPress_Versions
