@@ -1377,7 +1377,7 @@ class PostExploit:
         self.wordlist = wordlist
         # hashcat -m 400 -a 0 -o cracked.txt hashes.txt passw.txt
         print "[-] Cracking WordPress Hashes in: "+hashfile+" ... "
-        process = os.system("hashcat -m 400 -a -o cracked.txt "+hashfile+" "+self.wordlist)
+        process = os.system("hashcat -m 400 -a 0 -o cracked.txt "+hashfile+" "+self.wordlist)
         if process == 0 :
             print "[-] Cracked Passwords saved in: cracked.txt"
         else :
