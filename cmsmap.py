@@ -1382,7 +1382,7 @@ class PostExploit:
     
     def WPCrackHashes(self,hashfile,wordlist):
         self.wordlist = wordlist
-        if not os.path.isfile('wordlist/rockyou.txt'): print "[-] Decompressing rockyou.zip"; self.ExtractFile('wordlist/rockyou.zip')
+        if not os.path.isfile('wordlist/rockyou.txt'): print "[-] Decompressing rockyou.zip"; self.ExtractFile('wordlist/rockyou.zip', 'wordlist')
         # hashcat -m 400 -a 0 -o cracked.txt hashes.txt passw.txt
         print "[-] Cracking WordPress Hashes in: "+hashfile+" ... "
         process = os.system("hashcat -m 400 -a 0 -o cracked.txt "+hashfile+" "+self.wordlist)
@@ -1393,7 +1393,7 @@ class PostExploit:
 
     def JooCrackHashes(self,hashfile,wordlist):
         self.wordlist = wordlist
-        if not os.path.isfile('wordlist/rockyou.txt'): self.ExtractFile('rockyou.zip','wordlist')
+        if not os.path.isfile('wordlist/rockyou.txt'): print "[-] Decompressing rockyou.zip"; self.ExtractFile('wordlist/rockyou.zip', 'wordlist')
         # hashcat -m 10 -a 0 -o cracked.txt hashes.txt passw.txt
         print "[-] Cracking Joomla Hashes in: "+hashfile+" ... "
         process = os.system("hashcat -m 10 -a 0 -o cracked.txt "+hashfile+" "+self.wordlist)
