@@ -15,7 +15,7 @@ Installation
 =====
 You can download the latest version of CMSmap by cloning the GitHub repository:
 
-	git clone https://github.com/m7x/CMSmap.git
+	git clone https://github.com/Dionach/CMSmap.git
 
 
 Usage
