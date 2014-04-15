@@ -1613,8 +1613,6 @@ if __name__ == "__main__":
             elif o in ("-T", "--threads"):
                 threads = int(a)
                 print "[-] Threads Set : "+str(threads)
-            elif o in("-v", "--verbose"):
-                verbose = True
             elif o in("-o", "--output"):
                 output = True
                 report = Report(a)
