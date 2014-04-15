@@ -1590,7 +1590,7 @@ if __name__ == "__main__":
             if o == "-h":
                 usage(version)
                 sys.exit()
-            elif o in ("-t", "--target2"):
+            elif o in ("-t", "--target"):
                 url = a
                 pUrl = urlparse.urlparse(url)
                 #clean up supplied URLs
