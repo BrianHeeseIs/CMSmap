@@ -147,12 +147,25 @@ class Initialize:
 
 class Scanner:
     # Detect type of CMS -> Maybe add it to the main after Initialiazer 
-    def __init__(self,url,threads):
+    def __init__(self):
         self.agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
         self.headers={'User-Agent':self.agent,}
-        self.url = url
-        self.threads = threads
-
+        self.url = None
+        self.force = None
+        self.threads = None
+        
+    def ForceCMSType(self):
+        if self.force == 'W':
+            WPScan(self.url,self.threads).WPrun()
+        elif self.force == 'J': 
+            JooScan(self.url,self.threads).Joorun()
+        elif self.force == 'D': 
+            DruScan(self.url,"default",self.threads).Drurun()
+        else:
+            msg = "[-] Not Valid Option Provided: use (W)ordpress, (J)oomla, (D)rupal"; print msg
+            if output : report.WriteTextFile(msg) 
+        
+        
     def FindCMSType(self):
         req = urllib2.Request(self.url,None,self.headers)
         try:
@@ -196,14 +209,21 @@ class Scanner:
                 req = urllib2.Request(self.url+"/sites/default/settings.php")
                 try:
                     urllib2.urlopen(req)
-                    DruScan(self.url,self.threads).Drurun()
+                    DruScan(self.url,"default",self.threads).Drurun()
                 except urllib2.HTTPError, e:
-                    #print e.code
-                    msg = "[!] Drupal Config File Not Found: "+self.url+"/sites/default/settings.php"; print_red(msg)
-                    if output : report.WriteTextFile(msg)
-                    msg = "[-] Probably you are scanning the wrong web directory"; print_red(msg)
-                    if output : report.WriteTextFile(msg)
-                    sys.exit()
+                    pUrl = urlparse.urlparse(url)
+                    netloc = pUrl.netloc.lower()
+                    req = urllib2.Request(self.url+"/sites/"+netloc+"/settings.php")
+                    try:
+                        urllib2.urlopen(req)
+                        DruScan(self.url,netloc,self.threads).Drurun()
+                    except urllib2.HTTPError, e:
+                        #print e.code
+                        msg = "[!] Drupal Config File Not Found: "+self.url+"/sites/default/settings.php"; print_red(msg)
+                        if output : report.WriteTextFile(msg)
+                        msg = "[-] Probably you are scanning the wrong web directory"; print_red(msg)
+                        if output : report.WriteTextFile(msg)
+                        sys.exit()
             else:
                 msg = "[-] CMS site Not Found: Probably you are scanning the wrong web directory"; print_red(msg)
                 if output : report.WriteTextFile(msg)
@@ -673,13 +693,14 @@ class JooScan:
         
 class DruScan:
     # Scan Drupal site
-    def __init__(self,url,threads):
+    def __init__(self,url,netloc,threads):
         self.agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
         self.headers={'User-Agent':self.agent,}
         self.url = url
         self.queue_num = 5
         self.thread_num = threads
         self.notExistingCode = 404
+        self.netloc = netloc
         self.pluginPath = "/modules/"
         self.forgottenPsw = "/?q=user/password"
         self.weakpsw = ['password', 'admin','123456','Password1'] # 5th attempt is the username
@@ -738,10 +759,10 @@ class DruScan:
 
     def DruConfigFiles(self):
         for file in self.confFiles:
-            req = urllib2.Request(self.url+"/sites/default/settings"+file)
+            req = urllib2.Request(self.url+"/sites/"+self.netloc+"/settings"+file)
             try:
                 urllib2.urlopen(req)
-                msg = "[*] Configuration File Found: " +self.url+"/sites/default/settings"+file; print_red(msg)
+                msg = "[*] Configuration File Found: " +self.url+"/sites/"+self.netloc+"/settings"+file; print_red(msg)
                 if output : report.WriteTextFile(msg)
             except urllib2.HTTPError, e:
                 #print e.code
@@ -1416,7 +1437,7 @@ class PostExploit:
             finally: file.close()
         finally:
             os.chdir(cwd)
-
+    
 class GenericChecks:
     def __init__(self,url):
         self.url = url
@@ -1521,7 +1542,7 @@ class GenericChecks:
             msg = self.url+"/"+file; print msg
             if output : report.WriteTextFile(msg)
         self.pbar.finish()
-
+        
 class Report:
     def __init__(self,fn):
         self.fn = fn
@@ -1571,16 +1592,21 @@ def usage(version):
           -w, --wordlist  wordlist file (Default: rockyou.txt)
           -U, --update    update CMSmap to the latest version
           -h, --help      show this help
+          -f, --force     force scan (W)ordpress, (J)oomla or (D)rupal
           """
     print "Example: "+ os.path.basename(sys.argv[0]) +" -t https://example.com"
+    print "         "+ os.path.basename(sys.argv[0]) +" -t https://example.com -f W "
     print "         "+ os.path.basename(sys.argv[0]) +" -t https://example.com -u admin -p passwords.txt"
     print "         "+ os.path.basename(sys.argv[0]) +" -k hashes.txt"
     
 if __name__ == "__main__":
     # command line arguments
+    
+    scanner = Scanner()
+    
     if sys.argv[1:]:
         try:
-            optlist, args = getopt.getopt(sys.argv[1:], 't:u:p:T:o:k:w:vhU', ["target=", "verbose","help","usr=","psw=","output=","threads=","crack=","wordlist=","update"])
+            optlist, args = getopt.getopt(sys.argv[1:], 't:u:p:T:o:k:w:vhUf:', ["target=", "verbose","help","usr=","psw=","output=","threads=","crack=","wordlist=","force=","update"])
         except getopt.GetoptError as err:
             # print help information and exit:
             print(err) # print something like "option -a not recognized"
@@ -1608,6 +1634,8 @@ if __name__ == "__main__":
             elif o in ("-k", "--crack"):
                 CrackingPasswords = True
                 hashfile = a
+            elif o in ("-f", "--force"):
+                scanner.force = a                
             elif o in ("-w", "--wordlist"):
                 wordlist = a
             elif o in ("-T", "--threads"):
@@ -1626,7 +1654,9 @@ if __name__ == "__main__":
     else:
         usage(version)
         sys.exit()
-        
+    
+    
+    
     start = time.time()
     msg = "[-] Date & Time: "+ time.strftime('%d/%m/%Y %H:%M:%S'); print_blue(msg)
     if output : report.WriteTextFile(msg)
@@ -1638,7 +1668,7 @@ if __name__ == "__main__":
         initializer.GetJoomlaPluginsExploitDB()
         initializer.GetWordpressPluginsExploitDB()
         initializer.GetDrupalPlugins()
-        
+
     if CMSmapUpdate :
         initializer = Initialize()
         initializer.CMSmapUpdate()
@@ -1646,8 +1676,14 @@ if __name__ == "__main__":
         BruteForcer(url,usrlist,pswlist).FindCMSType()
     elif CrackingPasswords:
         PostExploit(None).CrackingHashesType(hashfile, wordlist)
+    elif scanner.force is not None:
+        scanner.url = url
+        scanner.threads = threads
+        scanner.ForceCMSType()
     else :
-        Scanner(url,threads).FindCMSType()
+        scanner.url = url
+        scanner.threads = threads
+        scanner.FindCMSType()
     
     end = time.time()
     diffTime = end - start
