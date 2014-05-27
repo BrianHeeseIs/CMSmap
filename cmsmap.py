@@ -184,12 +184,15 @@ class Scanner:
                     urllib2.urlopen(req)
                     WPScan(self.url,self.threads).WPrun()
                 except urllib2.HTTPError, e:
-                    #print e.code
-                    msg = "[!] WordPress Config File Not Found: "+self.url+"/wp-config.php"; print_red(msg)
-                    if output : report.WriteTextFile(msg)
-                    msg = "[-] Probably you are scanning the wrong web directory"; print_red(msg)
-                    if output : report.WriteTextFile(msg)
-                    sys.exit() 
+                    if e.code == 403 : 
+                        WPScan(self.url,self.threads).WPrun()
+                    else:
+                        #print e.code
+                        msg = "[!] WordPress Config File Not Found: "+self.url+"/wp-config.php"; print_red(msg)
+                        if output : report.WriteTextFile(msg)
+                        msg = "[-] Probably you are scanning the wrong web directory"; print_red(msg)
+                        if output : report.WriteTextFile(msg)
+                        sys.exit() 
                     
             elif re.search("Joomla", htmltext,re.IGNORECASE):
                 msg = "[*] CMS Detection: Joomla"; print msg
@@ -199,12 +202,15 @@ class Scanner:
                     urllib2.urlopen(req)
                     JooScan(self.url,self.threads).Joorun()
                 except urllib2.HTTPError, e:
-                    #print e.code
-                    msg = "[!] Joomla Config File Not Found: "+self.url+"/configuration.php"; print_red(msg)
-                    if output : report.WriteTextFile(msg)
-                    msg = "[-] Probably you are scanning the wrong web directory"; print_red(msg)
-                    if output : report.WriteTextFile(msg)
-                    sys.exit()                
+                    if e.code == 403 :
+                        JooScan(self.url,self.threads).Joorun()
+                    else:
+                        #print e.code
+                        msg = "[!] Joomla Config File Not Found: "+self.url+"/configuration.php"; print_red(msg)
+                        if output : report.WriteTextFile(msg)
+                        msg = "[-] Probably you are scanning the wrong web directory"; print_red(msg)
+                        if output : report.WriteTextFile(msg)
+                        sys.exit()                
                 
             elif re.search("Drupal", htmltext,re.IGNORECASE):
                 msg = "[*] CMS Detection: Drupal"; print msg
@@ -221,12 +227,15 @@ class Scanner:
                         urllib2.urlopen(req)
                         DruScan(self.url,netloc,self.threads).Drurun()
                     except urllib2.HTTPError, e:
-                        #print e.code
-                        msg = "[!] Drupal Config File Not Found: "+self.url+"/sites/default/settings.php"; print_red(msg)
-                        if output : report.WriteTextFile(msg)
-                        msg = "[-] Probably you are scanning the wrong web directory"; print_red(msg)
-                        if output : report.WriteTextFile(msg)
-                        sys.exit()
+                        if e.code == 403 :
+                            DruScan(self.url,netloc,self.threads).Drurun()
+                        else:
+                            #print e.code
+                            msg = "[!] Drupal Config File Not Found: "+self.url+"/sites/default/settings.php"; print_red(msg)
+                            if output : report.WriteTextFile(msg)
+                            msg = "[-] Probably you are scanning the wrong web directory"; print_red(msg)
+                            if output : report.WriteTextFile(msg)
+                            sys.exit()
             else:
                 msg = "[-] CMS site Not Found: Probably you are scanning the wrong web directory"; print_red(msg)
                 if output : report.WriteTextFile(msg)
@@ -274,10 +283,9 @@ class WPScan:
         BruteForcer(self.url,self.usernames,self.weakpsw).WPrun()
         self.WPForgottenPassword()
         GenericChecks(self.url).AutocompleteOff('/wp-login.php')
+        self.WPNotExisitingCode()
         self.WPDefaultFiles()
         GenericChecks(self.url).CommonFiles()
-        # === Takes Long ===
-        self.WPNotExisitingCode()
         self.WPplugins()
         ExploitDBSearch(self.url, 'Wordpress', self.pluginsFound).Plugins()
         self.WPThemes()
@@ -368,7 +376,7 @@ class WPScan:
             except urllib2.HTTPError, e:
                 #print e.code
                 pass
-        for file in self.defFiles:
+        for file in self.defFilesFound:
             msg = self.url+file; print msg
             if output : report.WriteTextFile(msg)
             
@@ -543,10 +551,10 @@ class JooScan:
         self.JooConfigFiles()
         self.JooFeed()
         BruteForcer(self.url,self.usernames,self.weakpsw).Joorun()
+        self.JooNotExisitingCode()
         self.JooDefaultFiles()
         # === Takes Long ===
         GenericChecks(self.url).CommonFiles()
-        self.JooNotExisitingCode()
         self.JooComponents()
         ExploitDBSearch(self.url, "Joomla", self.pluginsFound).Plugins()
         self.JooDirsListing()
@@ -625,7 +633,7 @@ class JooScan:
             except urllib2.HTTPError, e:
                 #print e.code
                 pass
-        for file in self.defFiles:
+        for file in self.defFilesFound:
             msg = self.url+file; print msg
             if output : report.WriteTextFile(msg)
 
@@ -722,11 +730,11 @@ class DruScan:
         self.DruViews()
         self.DruBlog()
         BruteForcer(self.url,self.usernames,self.weakpsw).Drurun()
-        self.DefaultFiles()
+        self.DruNotExisitingCode()
+        self.DruDefaultFiles()
         # === Takes Long ===
         GenericChecks(self.url).CommonFiles()
         self.DruForgottenPassword()
-        self.DruNotExisitingCode()
         self.DruModules()
         ExploitDBSearch(self.url, "Drupal", self.pluginsFound).Plugins()
         self.DruDirsListing()
@@ -771,7 +779,7 @@ class DruScan:
                 #print e.code
                 pass   
            
-    def DefaultFiles(self):
+    def DruDefaultFiles(self):
         self.defFilesFound = []
         msg = "[-] Drupal Default Files: "; print msg
         if output : report.WriteTextFile(msg)
@@ -815,7 +823,7 @@ class DruScan:
             except urllib2.HTTPError, e:
                 #print e.code
                 pass
-        for file in self.defFiles:
+        for file in self.defFilesFound:
             msg = self.url+file; print msg
             if output : report.WriteTextFile(msg)
 
@@ -974,7 +982,10 @@ class NoRedirects(urllib2.HTTPRedirectHandler):
         raise RedirError
         
 class ThreadScanner(threading.Thread):
-    # Multi-threading Scan Class (just for Wordpress for now) 
+    # self.url = http://mysite.com
+    # pluginPath = /wp-content
+    # pluginPathEnd = /
+    # pluginFound = wptest 
     def __init__(self,url,pluginPath,pluginPathEnd,pluginsFound,notExistingCode,q):
         threading.Thread.__init__ (self)
         self.url = url
@@ -1446,7 +1457,7 @@ class GenericChecks:
         self.url = url
         self.agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
         self.headers={'User-Agent':self.agent,}
-        self.widgets = ['Progress: ', progressbar.Percentage(), ' ', progressbar.Bar(marker=progressbar.RotatingMarker()),' ', progressbar.ETA(), ' ', progressbar.FileTransferSpeed()]
+        self.widgets = ['                              ', progressbar.Percentage(), ' ', progressbar.Bar(marker=progressbar.RotatingMarker()),' ', progressbar.ETA(), ' ', progressbar.FileTransferSpeed()]
         self.notExistingCode = 404
         self.queue_num = 5
         self.thread_num = 5
@@ -1537,7 +1548,9 @@ class GenericChecks:
         # Add all plugins to the queue
             for commFilesIndex,file in enumerate(self.commFiles):
                 q.put(file+ext)
-                self.pbar.update((len(self.commFiles)*extIndex)+commFilesIndex)   
+                sys.stdout.write(file+ext+"               \r")
+                sys.stdout.flush()
+                self.pbar.update((len(self.commFiles)*extIndex)+commFilesIndex)
             q.join()
         self.pbar.finish()       
 
