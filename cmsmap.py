@@ -155,6 +155,9 @@ class Scanner:
         self.threads = None
         
     def ForceCMSType(self):
+        GenericChecks(self.url).HTTPSCheck()
+        GenericChecks(self.url).HeadersCheck()
+        GenericChecks(self.url).RobotsTXT()
         if self.force == 'W':
             WPScan(self.url,self.threads).WPrun()
         elif self.force == 'J': 
