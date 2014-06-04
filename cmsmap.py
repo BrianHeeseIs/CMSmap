@@ -377,7 +377,7 @@ class WPScan:
                 #print e.code
                 pass
         for file in self.defFilesFound:
-            msg = self.url+file; print msg
+            msg = file; print msg
             if output : report.WriteTextFile(msg)
             
     def WPFeed(self):
@@ -435,9 +435,9 @@ class WPScan:
         try:
             req = urllib2.Request(self.url+"/wp-content/plugins/hello.php",None,self.headers)
             htmltext = urllib2.urlopen(req).read()
-            fullPath = re.findall(re.compile('Fatal error.* /(.+?)hello.php'),htmltext)
+            fullPath = re.findall(re.compile('Fatal error.*>/(.+?/)hello.php'),htmltext)
             if fullPath :
-                msg = "[*] Wordpress Hello Plugin Full Path Disclosure: "+self.url+"/wp-content/plugins/hello.php -> "+"/"+fullPath[0]+"hello.php"; print msg
+                msg = "[*] Wordpress Hello Plugin Full Path Disclosure: "+"/"+fullPath[0]+"hello.php"; print msg
                 if output : report.WriteTextFile(msg)
         except urllib2.HTTPError, e:
             #print e.code
