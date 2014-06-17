@@ -153,6 +153,7 @@ class Scanner:
         self.url = None
         self.force = None
         self.threads = None
+        self.file = None
         
     def ForceCMSType(self):
         GenericChecks(self.url).HTTPSCheck()
@@ -179,7 +180,7 @@ class Scanner:
             if re.search("Wordpress", htmltext,re.IGNORECASE):
                 msg = "[*] CMS Detection: Wordpress"; print msg
                 if output : report.WriteTextFile(msg)
-                req = urllib2.Request(self.url+"/wp-config.php")
+                req = urllib2.Request(self.url+"/wp-login.php")
                 try:
                     urllib2.urlopen(req)
                     WPScan(self.url,self.threads).WPrun()
@@ -188,11 +189,13 @@ class Scanner:
                         WPScan(self.url,self.threads).WPrun()
                     else:
                         #print e.code
-                        msg = "[!] WordPress Config File Not Found: "+self.url+"/wp-config.php"; print_red(msg)
+                        if self.url[-1] == '/':
+                            self.url = self.url[:-1]
+                        msg = "[!] WordPress Config File Not Found: "+self.url+"/wp-login.php"; print_red(msg)
                         if output : report.WriteTextFile(msg)
                         msg = "[-] Probably you are scanning the wrong web directory"; print_red(msg)
                         if output : report.WriteTextFile(msg)
-                        sys.exit() 
+                        if self.file is None : sys.exit()
                     
             elif re.search("Joomla", htmltext,re.IGNORECASE):
                 msg = "[*] CMS Detection: Joomla"; print msg
@@ -210,7 +213,7 @@ class Scanner:
                         if output : report.WriteTextFile(msg)
                         msg = "[-] Probably you are scanning the wrong web directory"; print_red(msg)
                         if output : report.WriteTextFile(msg)
-                        sys.exit()                
+                        if self.file is None : sys.exit()
                 
             elif re.search("Drupal", htmltext,re.IGNORECASE):
                 msg = "[*] CMS Detection: Drupal"; print msg
@@ -235,14 +238,14 @@ class Scanner:
                             if output : report.WriteTextFile(msg)
                             msg = "[-] Probably you are scanning the wrong web directory"; print_red(msg)
                             if output : report.WriteTextFile(msg)
-                            sys.exit()
+                            if self.file is None : sys.exit()
             else:
                 msg = "[-] CMS site Not Found: Probably you are scanning the wrong web directory"; print_red(msg)
                 if output : report.WriteTextFile(msg)
                 
         except urllib2.URLError, e:
             print_red("[!] Website Unreachable: "+self.url)
-            sys.exit()          
+            if self.file is None : sys.exit()
 
 class WPScan:
     # Scan WordPress site
@@ -1597,8 +1600,9 @@ print_blue_bold = lambda x: cprint(x, 'blue', attrs=['bold'], file=sys.stderr)
 # Global Methos =================================================================================================
 
 def usage(version):
-    print "CMSmap tool v"+str(version)+" - Simple CMS Scanner\nAuthor: Mike Manzotti mike.manzotti@dionach.com\nUsage: " + os.path.basename(sys.argv[0]) + """ -t <URL>
+    print "CMSmap tool v"+str(version)+" - Simple CMS Scanner\nAuthor: Mike Manzotti mike.manzotti@dionach.com\nUsage: " + os.path.basename(sys.argv[0]) + """ -t <URL> | -f bulkfile.txt
           -t, --target    target URL (e.g. 'https://abc.test.com:8080/')
+          -f, --file      Scan multiple targets enlisted in a given textual file
           -v, --verbose   verbose mode (Default: false)
           -T, --threads   number of threads (Default: 5)
           -u, --usr       username or file 
@@ -1622,7 +1626,7 @@ if __name__ == "__main__":
     
     if sys.argv[1:]:
         try:
-            optlist, args = getopt.getopt(sys.argv[1:], 't:u:p:T:o:k:w:vhUf:', ["target=", "verbose","help","usr=","psw=","output=","threads=","crack=","wordlist=","force=","update"])
+            optlist, args = getopt.getopt(sys.argv[1:], 't:u:p:T:o:k:w:vhUf:', ["target=", "verbose","help","usr=","psw=","output=","threads=","crack=","wordlist=","force=","update","file="])
         except getopt.GetoptError as err:
             # print help information and exit:
             print(err) # print something like "option -a not recognized"
@@ -1664,6 +1668,9 @@ if __name__ == "__main__":
                 CMSmapUpdate = True
             elif o in("-v", "--verbose"):
                 verbose = True
+            elif o in("-f", "--file"):
+                scanner.file = a
+                
             else:
                 usage(version)
                 sys.exit()
@@ -1692,6 +1699,27 @@ if __name__ == "__main__":
         BruteForcer(url,usrlist,pswlist).FindCMSType()
     elif CrackingPasswords:
         PostExploit(None).CrackingHashesType(hashfile, wordlist)
+    elif scanner.file is not None:
+        targets = open(scanner.file, 'r')
+        shoppingList = targets.readlines()
+
+        for target in shoppingList:
+            # strip leading and trailing whitespace from target url
+            url = target.strip()
+            pUrl = urlparse.urlparse(url)
+            #clean up supplied URLs
+            netloc = pUrl.netloc.lower()
+            scheme = pUrl.scheme.lower()
+            path = pUrl.path.lower()
+            if not scheme:
+                print 'VALIDATION ERROR: http(s):// prefix required: ' + target
+                exit(1)
+            scanner.url = url
+            scanner.threads = threads
+            if scanner.force is not None:
+                scanner.ForceCMSType()
+            else:
+                scanner.FindCMSType()
     elif scanner.force is not None:
         scanner.url = url
         scanner.threads = threads
