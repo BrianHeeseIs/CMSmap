@@ -1627,7 +1627,7 @@ if __name__ == "__main__":
     
     if sys.argv[1:]:
         try:
-            optlist, args = getopt.getopt(sys.argv[1:], 't:u:p:T:o:k:w:vhUf:', ["target=", "verbose","help","usr=","psw=","output=","threads=","crack=","wordlist=","force=","update","file="])
+            optlist, args = getopt.getopt(sys.argv[1:], 'tm:u:p:T:o:k:w:vhUf:', ["target=", "verbose","help","usr=","psw=","output=","threads=","crack=","wordlist=","force=","update","bulkfile="])
         except getopt.GetoptError as err:
             # print help information and exit:
             print(err) # print something like "option -a not recognized"
@@ -1671,7 +1671,6 @@ if __name__ == "__main__":
                 verbose = True
             elif o in("-m", "--bulkfile"):
                 scanner.file = a
-                
             else:
                 usage(version)
                 sys.exit()
