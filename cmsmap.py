@@ -1600,9 +1600,9 @@ print_blue_bold = lambda x: cprint(x, 'blue', attrs=['bold'], file=sys.stderr)
 # Global Methos =================================================================================================
 
 def usage(version):
-    print "CMSmap tool v"+str(version)+" - Simple CMS Scanner\nAuthor: Mike Manzotti mike.manzotti@dionach.com\nUsage: " + os.path.basename(sys.argv[0]) + """ -t <URL> | -f bulkfile.txt
+    print "CMSmap tool v"+str(version)+" - Simple CMS Scanner\nAuthor: Mike Manzotti mike.manzotti@dionach.com\nUsage: " + os.path.basename(sys.argv[0]) + """ -t <URL>
           -t, --target    target URL (e.g. 'https://abc.test.com:8080/')
-          -f, --file      Scan multiple targets enlisted in a given textual file
+          -m, --bulkfile  Scan multiple targets enlisted in a given textual file
           -v, --verbose   verbose mode (Default: false)
           -T, --threads   number of threads (Default: 5)
           -u, --usr       username or file 
@@ -1617,6 +1617,7 @@ def usage(version):
     print "Example: "+ os.path.basename(sys.argv[0]) +" -t https://example.com"
     print "         "+ os.path.basename(sys.argv[0]) +" -t https://example.com -f W "
     print "         "+ os.path.basename(sys.argv[0]) +" -t https://example.com -u admin -p passwords.txt"
+    print "         "+ os.path.basename(sys.argv[0]) +" -t https://example.com -m targets.txt"
     print "         "+ os.path.basename(sys.argv[0]) +" -k hashes.txt"
     
 if __name__ == "__main__":
@@ -1668,7 +1669,7 @@ if __name__ == "__main__":
                 CMSmapUpdate = True
             elif o in("-v", "--verbose"):
                 verbose = True
-            elif o in("-f", "--file"):
+            elif o in("-m", "--bulkfile"):
                 scanner.file = a
                 
             else:
