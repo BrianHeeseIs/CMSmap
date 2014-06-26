@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import smtplib, base64, os, sys, getopt, urllib2, urllib, re, socket, time, httplib, tarfile
+import smtplib, base64, os, sys, getopt, urllib2, urllib, re, socket, time, httplib, tarfile, json as simplejson
 import itertools, urlparse, threading, Queue, multiprocessing, cookielib, datetime, zipfile
 from thirdparty.multipart import multipartpost
 from thirdparty.termcolor.termcolor import cprint,colored
@@ -154,6 +154,7 @@ class Scanner:
         self.force = None
         self.threads = None
         self.file = None
+        self.exitOnFailure = True
         
     def ForceCMSType(self):
         GenericChecks(self.url).HTTPSCheck()
@@ -168,8 +169,23 @@ class Scanner:
         else:
             msg = "[-] Not Valid Option Provided: use (W)ordpress, (J)oomla, (D)rupal"; print msg
             if output : report.WriteTextFile(msg) 
-        
-        
+    
+    # Auto expand attack surface, add all other known sites on target server to scan targets
+    def Reveal(self):
+        req = urllib2.Request("http://domains.yougetsignal.com/domains.php","remoteAddress=" + self.domain + "&key=&_", self.headers)
+        print "built request to lookup domain: " + self.domain
+        try:
+            additionalTargets = urllib2.urlopen(req).read()
+            additionalTargets = simplejson.loads(additionalTargets)["domainArray"]
+            #print "additional targets: " + simplejson.dumps(additionalTargets, indent=4)
+            msg = "[+]Reveal found " + str(len(additionalTargets)) + " sites on target server, adding to scope"; print_red(msg)
+            if output : report.WriteTextFile(msg)
+            return additionalTargets
+
+        except urllib2.URLError, e:
+            print_red("[!] Additional domains lookup service unreachable, better luck next time!")
+            if self.exitOnFailure is True : sys.exit()
+
     def FindCMSType(self):
         req = urllib2.Request(self.url,None,self.headers)
         try:
@@ -195,7 +211,7 @@ class Scanner:
                         if output : report.WriteTextFile(msg)
                         msg = "[-] Probably you are scanning the wrong web directory"; print_red(msg)
                         if output : report.WriteTextFile(msg)
-                        if self.file is None : sys.exit()
+                        if self.exitOnFailure is True : sys.exit()
                     
             elif re.search("Joomla", htmltext,re.IGNORECASE):
                 msg = "[*] CMS Detection: Joomla"; print msg
@@ -213,7 +229,7 @@ class Scanner:
                         if output : report.WriteTextFile(msg)
                         msg = "[-] Probably you are scanning the wrong web directory"; print_red(msg)
                         if output : report.WriteTextFile(msg)
-                        if self.file is None : sys.exit()
+                        if self.exitOnFailure is True : sys.exit()
                 
             elif re.search("Drupal", htmltext,re.IGNORECASE):
                 msg = "[*] CMS Detection: Drupal"; print msg
@@ -238,14 +254,14 @@ class Scanner:
                             if output : report.WriteTextFile(msg)
                             msg = "[-] Probably you are scanning the wrong web directory"; print_red(msg)
                             if output : report.WriteTextFile(msg)
-                            if self.file is None : sys.exit()
+                            if self.exitOnFailure is True : sys.exit()
             else:
                 msg = "[-] CMS site Not Found: Probably you are scanning the wrong web directory"; print_red(msg)
                 if output : report.WriteTextFile(msg)
                 
         except urllib2.URLError, e:
             print_red("[!] Website Unreachable: "+self.url)
-            if self.file is None : sys.exit()
+            if self.exitOnFailure is True : sys.exit()
 
 class WPScan:
     # Scan WordPress site
@@ -1603,6 +1619,7 @@ def usage(version):
     print "CMSmap tool v"+str(version)+" - Simple CMS Scanner\nAuthor: Mike Manzotti mike.manzotti@dionach.com\nUsage: " + os.path.basename(sys.argv[0]) + """ -t <URL>
           -t, --target    target URL (e.g. 'https://abc.test.com:8080/')
           -m, --bulkfile  Scan multiple targets enlisted in a given textual file
+          -r, --reveal    Automatically lookup other sites hosted on target server and add to scope
           -v, --verbose   verbose mode (Default: false)
           -T, --threads   number of threads (Default: 5)
           -u, --usr       username or file 
@@ -1627,7 +1644,7 @@ if __name__ == "__main__":
     
     if sys.argv[1:]:
         try:
-            optlist, args = getopt.getopt(sys.argv[1:], 'tm:u:p:T:o:k:w:vhUf:', ["target=", "verbose","help","usr=","psw=","output=","threads=","crack=","wordlist=","force=","update","bulkfile="])
+            optlist, args = getopt.getopt(sys.argv[1:], 'tm:u:p:T:o:k:w:vhUfr:', ["target=", "verbose","help","usr=","psw=","output=","threads=","crack=","wordlist=","force=","update","bulkfile=","reveal"])
         except getopt.GetoptError as err:
             # print help information and exit:
             print(err) # print something like "option -a not recognized"
@@ -1640,6 +1657,7 @@ if __name__ == "__main__":
             elif o in ("-t", "--target"):
                 url = a
                 pUrl = urlparse.urlparse(url)
+                scanner.domain = '{uri.netloc}'.format(uri=pUrl)
                 #clean up supplied URLs
                 netloc = pUrl.netloc.lower()
                 scheme = pUrl.scheme.lower()
@@ -1671,6 +1689,8 @@ if __name__ == "__main__":
                 verbose = True
             elif o in("-m", "--bulkfile"):
                 scanner.file = a
+            elif o in("-r", "--reveal"):
+                reveal = True
             else:
                 usage(version)
                 sys.exit()
@@ -1699,6 +1719,25 @@ if __name__ == "__main__":
         BruteForcer(url,usrlist,pswlist).FindCMSType()
     elif CrackingPasswords:
         PostExploit(None).CrackingHashesType(hashfile, wordlist)
+    elif reveal :
+        print "Processing reveal"
+        # Fetch known sites on target server
+        scanner.threads = threads
+
+        # TODO: add more validation (check success status)
+        shoppingList = scanner.Reveal()
+        #for key, value in enumerate(shoppingList):
+        #    print key, value
+        #print "reveal shopping: " + simplejson.dumps(shoppingList, indent=4)
+        
+        #kludge: theres a better way to do this.
+        for target in enumerate(shoppingList):
+            url = str(scheme) + '://' + str(target[1][0])
+            print_red_bold('Scanning ' + url)
+            scanner.url = url
+            scanner.exitOnFailure = False
+            scanner.FindCMSType()
+
     elif scanner.file is not None:
         targets = open(scanner.file, 'r')
         shoppingList = targets.readlines()
@@ -1716,6 +1755,7 @@ if __name__ == "__main__":
                 exit(1)
             scanner.url = url
             scanner.threads = threads
+            scanner.exitOnFailure = False
             if scanner.force is not None:
                 scanner.ForceCMSType()
             else:
