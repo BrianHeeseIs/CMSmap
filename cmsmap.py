@@ -1635,6 +1635,7 @@ def usage(version):
     print "         "+ os.path.basename(sys.argv[0]) +" -t https://example.com -f W "
     print "         "+ os.path.basename(sys.argv[0]) +" -t https://example.com -u admin -p passwords.txt"
     print "         "+ os.path.basename(sys.argv[0]) +" -t https://example.com -m targets.txt"
+    print "         "+ os.path.basename(sys.argv[0]) +" -t https://example.com -r"
     print "         "+ os.path.basename(sys.argv[0]) +" -k hashes.txt"
     
 if __name__ == "__main__":
