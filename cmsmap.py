@@ -177,7 +177,7 @@ class Scanner:
         try:
             additionalTargets = urllib2.urlopen(req).read()
             additionalTargets = simplejson.loads(additionalTargets)["domainArray"]
-            #print "additional targets: " + simplejson.dumps(additionalTargets, indent=4)
+            
             msg = "[+]Reveal found " + str(len(additionalTargets)) + " sites on target server, adding to scope"; print_red(msg)
             if output : report.WriteTextFile(msg)
             return additionalTargets
@@ -1721,15 +1721,12 @@ if __name__ == "__main__":
     elif CrackingPasswords:
         PostExploit(None).CrackingHashesType(hashfile, wordlist)
     elif reveal :
-        print "Processing reveal"
+        print "Revealing additional attack surface"
         # Fetch known sites on target server
         scanner.threads = threads
 
         # TODO: add more validation (check success status)
         shoppingList = scanner.Reveal()
-        #for key, value in enumerate(shoppingList):
-        #    print key, value
-        #print "reveal shopping: " + simplejson.dumps(shoppingList, indent=4)
         
         #kludge: theres a better way to do this.
         for target in enumerate(shoppingList):
@@ -1752,6 +1749,7 @@ if __name__ == "__main__":
             scheme = pUrl.scheme.lower()
             path = pUrl.path.lower()
             if not scheme:
+                # TODO: implement trying both https and http as default schemes?
                 print 'VALIDATION ERROR: http(s):// prefix required: ' + target
                 exit(1)
             scanner.url = url
